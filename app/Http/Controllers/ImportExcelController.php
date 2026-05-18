@@ -37,9 +37,13 @@ class ImportExcelController extends Controller
             'id_pengguna' => $user->id_pengguna ?? 1,
         ]);
 
-        Excel::import(new MahasiswaImport($file_entry->id_file), $file);
+        $import = new MahasiswaImport($file_entry->id_file);
+        Excel::import($import, $file);
+        $report = $import->getReport();
 
-        return redirect()->route('import-excel.index')->with('success', 'Data berhasil diimport.');
+        return redirect()->route('import-excel.index')
+            ->with('success', 'Data berhasil diimport dan dibersihkan.')
+            ->with('cleaning_report', $report);
     }
 
     public function destroy($id)

@@ -21,4 +21,8 @@ Route::middleware('auth')->group(function () {
     Route::resource('import-excel', ImportExcelController::class);
     Route::get('kmeans', [KMeansController::class, 'index'])->name('kmeans.index');
     Route::post('kmeans/hitung', [KMeansController::class, 'hitung'])->name('kmeans.hitung');
+    Route::get('kmeans/hitung', function () {
+        return redirect()->route('kmeans.index')->with('warning', 'Silakan tentukan parameter clustering terlebih dahulu.');
+    });
+    Route::get('kmeans/export', [KMeansController::class, 'export'])->name('kmeans.export');
 });
