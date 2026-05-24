@@ -76,21 +76,45 @@ class MahasiswaImport implements ToCollection
                 $rpsIdx = $idx;
             }
 
-            // Pemetaan kuesioner dinamis jika ada header bertuliskan a1, a2, dll.
-            if ($colLower === 'a1') $a1Idx = $idx;
-            if ($colLower === 'a2') $a2Idx = $idx;
-            if ($colLower === 'a3') $a3Idx = $idx;
-            if ($colLower === 'a4') $a4Idx = $idx;
+            // Pemetaan kuesioner dinamis berdasarkan kata kunci/deskripsi lengkap atau nama langsung (a1, a2, dll.)
+            if ($colLower === 'a1' || (strpos($colLower, 'berminat') !== false && strpos($colLower, 'pemrograman') !== false)) {
+                $a1Idx = $idx;
+            }
+            if ($colLower === 'a2' || (strpos($colLower, 'berminat') !== false && strpos($colLower, 'analisis data') !== false)) {
+                $a2Idx = $idx;
+            }
+            if ($colLower === 'a3' || (strpos($colLower, 'berminat') !== false && (strpos($colLower, 'analisis sistem') !== false || strpos($colLower, 'analisis system') !== false))) {
+                $a3Idx = $idx;
+            }
+            if ($colLower === 'a4' || (strpos($colLower, 'berminat') !== false && strpos($colLower, 'manajemen it') !== false)) {
+                $a4Idx = $idx;
+            }
             
-            if ($colLower === 'b1') $b1Idx = $idx;
-            if ($colLower === 'b2') $b2Idx = $idx;
-            if ($colLower === 'b3') $b3Idx = $idx;
-            if ($colLower === 'b4') $b4Idx = $idx;
+            if ($colLower === 'b1' || (strpos($colLower, 'keterampilan') !== false && strpos($colLower, 'pemrograman') !== false)) {
+                $b1Idx = $idx;
+            }
+            if ($colLower === 'b2' || (strpos($colLower, 'keterampilan') !== false && strpos($colLower, 'manajemen it') !== false)) {
+                $b2Idx = $idx;
+            }
+            if ($colLower === 'b3' || (strpos($colLower, 'keterampilan') !== false && strpos($colLower, 'analisis data') !== false)) {
+                $b3Idx = $idx;
+            }
+            if ($colLower === 'b4' || (strpos($colLower, 'keterampilan') !== false && (strpos($colLower, 'analisis sistem') !== false || strpos($colLower, 'analisis system') !== false))) {
+                $b4Idx = $idx;
+            }
             
-            if ($colLower === 'd1') $d1Idx = $idx;
-            if ($colLower === 'd2') $d2Idx = $idx;
-            if ($colLower === 'd3') $d3Idx = $idx;
-            if ($colLower === 'd4') $d4Idx = $idx;
+            if ($colLower === 'd1' || (strpos($colLower, 'nilai') !== false && strpos($colLower, 'data analyst') !== false)) {
+                $d1Idx = $idx;
+            }
+            if ($colLower === 'd2' || (strpos($colLower, 'nilai') !== false && strpos($colLower, 'system analyst') !== false)) {
+                $d2Idx = $idx;
+            }
+            if ($colLower === 'd3' || (strpos($colLower, 'nilai') !== false && strpos($colLower, 'application developer') !== false)) {
+                $d3Idx = $idx;
+            }
+            if ($colLower === 'd4' || (strpos($colLower, 'nilai') !== false && strpos($colLower, 'it auditor') !== false)) {
+                $d4Idx = $idx;
+            }
         }
 
         // Fallback jika ada kolom wajib yang tidak terdeteksi nama fiturnya

@@ -34,13 +34,13 @@
                             <label class="form-label text-xs font-weight-bold">
                                 Mahasiswa {{ $i }} ({{ $topics[$i-1] }})
                             </label>
-                            <div class="input-group input-group-outline">
-                                <select name="centroids[]" class="form-control" required>
+                            <div class="mb-2">
+                                <select name="centroids[]" class="select-search" required>
                                     <option value="">-- Pilih Mahasiswa --</option>
                                     @foreach($mahasiswa as $mhs)
                                         <option value="{{ $mhs->id_mahasiswa }}" 
                                             {{ (isset($selectedCentroids) && in_array($mhs->id_mahasiswa, $selectedCentroids)) || old('centroids.'.$i-1) == $mhs->id_mahasiswa ? 'selected' : '' }}>
-                                            {{ $mhs->nama }} ({{ $mhs->nim }})
+                                            {{ $mhs->nama }}{{ $mhs->npm ? ' (' . $mhs->npm . ')' : '' }}
                                         </option>
                                     @endforeach
                                 </select>
@@ -115,7 +115,7 @@
         </div>
     </div>
 @if(isset($history))
-<div class="row mt-4">
+<div class="row mt-4" id="hasil-cluster">
     <div class="col-12">
         <div class="card">
             <div class="card-header p-3">
@@ -506,4 +506,56 @@
     });
 </script>
 @endif
+@endpush
+
+@push('styles')
+<link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
+<style>
+    /* Styling adjustment for Tom Select to match Material Dashboard */
+    .ts-wrapper {
+        width: 100% !important;
+    }
+    .ts-control {
+        border: 1px solid #d2d2d2 !important;
+        border-radius: 0.375rem !important;
+        padding: 8px 12px !important;
+        background-color: #fff !important;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        font-size: 0.875rem !important;
+    }
+    .ts-wrapper.focus .ts-control {
+        border-color: #000 !important;
+        box-shadow: 0 0 0 0.2rem rgba(0, 0, 0, 0.15) !important;
+    }
+    .ts-dropdown {
+        border-radius: 0.375rem !important;
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06) !important;
+        font-size: 0.875rem !important;
+        z-index: 1050 !important;
+    }
+    .ts-dropdown .active {
+        background-color: #262626 !important;
+        color: #fff !important;
+    }
+    .ts-dropdown .option {
+        padding: 8px 12px !important;
+    }
+</style>
+@endpush
+
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('.select-search').forEach(el => {
+            new TomSelect(el, {
+                create: false,
+                sortField: {
+                    field: "text",
+                    direction: "asc"
+                }
+            });
+        });
+    });
+</script>
 @endpush

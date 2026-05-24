@@ -10,8 +10,8 @@
         <div class="card border-0 shadow-sm" style="border-radius: 12px; background: #fff; box-shadow: 0 4px 20px 0 rgba(0,0,0,0.05) !important;">
             <div class="card-header border-0 pb-0 pt-4 px-4 bg-transparent d-flex justify-content-between align-items-center flex-wrap gap-2">
                 <div class="d-flex align-items-center">
-                    <div class="icon icon-lg icon-shape bg-gradient-success shadow-success text-center border-radius-xl mt-n4 me-3 d-flex align-items-center justify-content-center" style="width: 64px; height: 64px; background: linear-gradient(195deg, #66bb6a, #43a047); border-radius: 0.75rem;">
-                        <i class="material-icons opacity-10 text-white" style="font-size: 32px;">cleaning_services</i>
+                    <div class="bg-gradient-success shadow-success text-center border-radius-xl mt-n4 me-3 d-flex align-items-center justify-content-center" style="width: 64px; height: 64px; background: linear-gradient(195deg, #66bb6a, #43a047); border-radius: 0.75rem;">
+                        <i class="material-icons opacity-10 text-white" style="font-size: 32px; line-height: 1;">cleaning_services</i>
                     </div>
                     <div>
                         <h5 class="mb-0 font-weight-bold text-dark" style="font-family: 'Outfit', sans-serif;">Laporan Hasil Pembersihan Data (Data Cleaning)</h5>
@@ -175,7 +175,6 @@
                                     <div class="d-flex px-2 py-1">
                                         <div class="d-flex flex-column justify-content-center">
                                             <h6 class="mb-0 text-sm">{{ $file->nama }}</h6>
-                                            <p class="text-xs text-secondary mb-0">ID: #{{ $file->id_file }}</p>
                                         </div>
                                     </div>
                                 </td>
@@ -186,15 +185,15 @@
                                     <span class="text-secondary text-xs font-weight-bold text-uppercase">{{ $file->pengguna->nama ?? 'Admin' }}</span>
                                 </td>
                                 <td class="align-middle text-center">
-                                    <div class="d-flex justify-content-center align-items-center gap-2">
-                                        <a href="{{ route('mahasiswa.index') }}" class="btn btn-link text-info p-0 mb-0">
-                                            <i class="material-icons text-sm">visibility</i> Lihat Data
+                                    <div class="d-flex justify-content-center align-items-center gap-3">
+                                        <a href="{{ route('mahasiswa.index') }}" class="btn btn-link text-info p-0 mb-0" title="Lihat Data">
+                                            <i class="material-icons text-lg">visibility</i>
                                         </a>
                                         <form action="{{ route('import-excel.destroy', $file->id_file) }}" method="POST" id="delete-form-{{ $file->id_file }}" class="d-inline">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="button" class="btn btn-link text-danger p-0 mb-0" onclick="confirmDelete('{{ $file->id_file }}')">
-                                                <i class="material-icons text-sm">delete</i> Hapus
+                                            <button type="button" class="btn btn-link text-danger p-0 mb-0" onclick="confirmDelete('{{ $file->id_file }}')" title="Hapus">
+                                                <i class="material-icons text-lg">delete</i>
                                             </button>
                                         </form>
                                     </div>

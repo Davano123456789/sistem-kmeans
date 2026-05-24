@@ -223,7 +223,9 @@ class KMeansController extends Controller
             }
         }
         
-        session(['kmeans_export_data' => $exportData]);
+        session([
+            'kmeans_export_data' => $exportData
+        ]);
 
         return view('kmeans.index', [
             'mahasiswa' => $allMahasiswa,

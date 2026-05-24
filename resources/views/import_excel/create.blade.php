@@ -20,9 +20,7 @@
                         <div class="input-group input-group-outline">
                             <input type="file" name="file" class="form-control" accept=".xls,.xlsx" required>
                         </div>
-                        <div class="mt-2 text-xs text-secondary">
-                            <i class="material-icons text-xs">info</i> Header wajib: <b>nim, nama, prodi, angkatan, c1, c2, c3, c4, c5, c6, c7, c8</b>
-                        </div>
+
                         @error('file')
                             <small class="text-danger">{{ $message }}</small>
                         @enderror
