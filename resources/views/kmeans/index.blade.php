@@ -152,7 +152,11 @@
                                 <tbody>
                                     @foreach($h['centroids'] as $cIdx => $cVals)
                                     <tr>
-                                        <td class="font-weight-bold text-start">{{ isset($selectedCentroids[$cIdx]) && ($m = $mahasiswa->firstWhere('id_mahasiswa', $selectedCentroids[$cIdx])) ? $m->nama : $topics[$cIdx] }}</td>
+                                        <td class="font-weight-bold text-start">
+                                            {{ $h['iterasi'] == 1 
+                                                ? (isset($selectedCentroids[$cIdx]) && ($m = $mahasiswa->firstWhere('id_mahasiswa', $selectedCentroids[$cIdx])) ? $m->nama : $topics[$cIdx]) 
+                                                : 'C' . ($cIdx + 1) }}
+                                        </td>
                                         @foreach($cVals as $v)
                                         <td>{{ number_format($v, 2) }}</td>
                                         @endforeach
@@ -178,9 +182,14 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach($h['results'] as $res)
-                                    <tr>
-                                        <td class="px-4">{{ $res['mahasiswa']->nama }}</td>
+                                     @foreach($h['results'] as $res)
+                                     <tr {!! ($res['moved'] ?? false) ? 'style="background-color: rgba(251, 140, 0, 0.08) !important;"' : '' !!}>
+                                         <td class="px-4">
+                                             {{ $res['mahasiswa']->nama }}
+                                             @if($res['moved'] ?? false)
+                                                 <span class="badge bg-warning text-dark ms-1" style="font-size: 0.65rem; padding: 2px 5px;" title="Pindah cluster dari iterasi sebelumnya">Pindah</span>
+                                             @endif
+                                         </td>
                                         @foreach($res['distances'] as $dist)
                                         <td class="text-center">{{ number_format($dist, 4) }}</td>
                                         @endforeach

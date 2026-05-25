@@ -46,6 +46,14 @@ class KMeansController extends Controller
             $clusters = [[], [], [], []];
             $iterResults = [];
 
+            // Ambil info cluster dari iterasi sebelumnya jika ada
+            $prevClusters = [];
+            if ($iter > 1) {
+                foreach ($history[$iter - 2]['results'] as $prevRes) {
+                    $prevClusters[$prevRes['mahasiswa']->id_mahasiswa] = $prevRes['cluster'];
+                }
+            }
+
             // 3. Hitung Jarak Euclidean & Assign Cluster
             foreach ($allMahasiswa as $mhs) {
                 $distances = [];
@@ -63,11 +71,20 @@ class KMeansController extends Controller
                 
                 $clusters[$assignedCluster][] = $mhs;
                 
+                $currentCluster = $assignedCluster + 1;
+                $moved = false;
+                if ($iter > 1 && isset($prevClusters[$mhs->id_mahasiswa])) {
+                    if ($prevClusters[$mhs->id_mahasiswa] !== $currentCluster) {
+                        $moved = true;
+                    }
+                }
+                
                 $iterResults[] = [
                     'mahasiswa' => $mhs,
                     'distances' => $distances,
                     'min_distance' => $minDistance,
-                    'cluster' => $assignedCluster + 1
+                    'cluster' => $currentCluster,
+                    'moved' => $moved
                 ];
             }
 
