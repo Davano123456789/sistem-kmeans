@@ -25,4 +25,9 @@ Route::middleware('auth')->group(function () {
         return redirect()->route('kmeans.index')->with('warning', 'Silakan tentukan parameter clustering terlebih dahulu.');
     });
     Route::get('kmeans/export', [KMeansController::class, 'export'])->name('kmeans.export');
+    Route::post('kmeans/simpan', [KMeansController::class, 'simpan'])->name('kmeans.simpan');
+    Route::get('hasil-cluster', [KMeansController::class, 'riwayatIndex'])->name('kmeans.riwayat.index');
+    Route::get('hasil-cluster/{id}', [KMeansController::class, 'riwayatShow'])->name('kmeans.riwayat.show');
+    Route::get('hasil-cluster/{id}/export', [KMeansController::class, 'riwayatExport'])->name('kmeans.riwayat.export');
+    Route::delete('hasil-cluster/{id}', [KMeansController::class, 'riwayatDestroy'])->name('kmeans.riwayat.destroy');
 });

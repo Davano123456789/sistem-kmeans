@@ -118,11 +118,28 @@
 <div class="row mt-4" id="hasil-cluster">
     <div class="col-12">
         <div class="card">
-            <div class="card-header p-3">
-                <h5 class="mb-0">Hasil Perhitungan K-Means</h5>
-                <p class="text-sm mb-0">
-                    Status: {!! $converged ? '<span class="badge badge-sm bg-gradient-success">Konvergen</span>' : '<span class="badge badge-sm bg-gradient-warning">Mencapai Batas Iterasi</span>' !!}
-                </p>
+            <div class="card-header p-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center">
+                <div>
+                    <h5 class="mb-0">Hasil Perhitungan K-Means</h5>
+                    <p class="text-sm mb-0">
+                        Status: {!! $converged ? '<span class="badge badge-sm bg-gradient-success">Konvergen</span>' : '<span class="badge badge-sm bg-gradient-warning">Mencapai Batas Iterasi</span>' !!}
+                    </p>
+                </div>
+                <div class="mt-3 mt-md-0" style="max-width: 450px; width: 100%;">
+                    <form action="{{ route('kmeans.simpan') }}" method="POST" class="d-flex align-items-center gap-2">
+                        @csrf
+                        @foreach($selectedCentroids as $cId)
+                            <input type="hidden" name="centroids[]" value="{{ $cId }}">
+                        @endforeach
+                        <div class="input-group input-group-outline is-filled my-0" style="flex-grow: 1;">
+                            <label class="form-label">Nama Riwayat</label>
+                            <input type="text" name="nama_riwayat" class="form-control" value="Hasil Cluster - {{ date('d-m-Y H:i') }}" required style="height: 38px;">
+                        </div>
+                        <button type="submit" class="btn btn-success mb-0 d-flex align-items-center gap-1 text-nowrap" style="height: 38px;">
+                            <i class="material-icons text-md">save</i> Simpan Riwayat
+                        </button>
+                    </form>
+                </div>
             </div>
             <div class="card-body p-3">
                 <ul class="nav nav-tabs mb-4" id="kmeansTabs" role="tablist">

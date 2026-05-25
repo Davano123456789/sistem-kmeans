@@ -11,9 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('nilai_kuesioner', function (Blueprint $table) {
-            $table->integer('a4')->after('a3')->nullable();
-        });
+        if (!Schema::hasColumn('nilai_kuesioner', 'a4')) {
+            Schema::table('nilai_kuesioner', function (Blueprint $table) {
+                $table->integer('a4')->after('a3')->nullable();
+            });
+        }
     }
 
     /**
@@ -21,8 +23,10 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('nilai_kuesioner', function (Blueprint $table) {
-            $table->dropColumn('a4');
-        });
+        if (Schema::hasColumn('nilai_kuesioner', 'a4')) {
+            Schema::table('nilai_kuesioner', function (Blueprint $table) {
+                $table->dropColumn('a4');
+            });
+        }
     }
 };

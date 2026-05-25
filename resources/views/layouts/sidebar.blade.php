@@ -41,8 +41,8 @@
         </a>
       </li>
       <li class="nav-item">
-        <a class="nav-link text-dark" href="#">
-          <div class="text-dark text-center me-2 d-flex align-items-center justify-content-center">
+        <a class="nav-link text-dark {{ Request::is('hasil-cluster*') ? 'active bg-gradient-dark text-white' : '' }}" href="{{ route('kmeans.riwayat.index') }}">
+          <div class="{{ Request::is('hasil-cluster*') ? 'text-white' : 'text-dark' }} text-center me-2 d-flex align-items-center justify-content-center">
             <i class="material-icons-round opacity-10">assignment</i>
           </div>
           <span class="nav-link-text ms-1">Hasil Cluster</span>
