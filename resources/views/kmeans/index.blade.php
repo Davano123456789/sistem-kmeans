@@ -171,19 +171,21 @@
                             <table class="table table-hover align-items-center mb-0 text-xs">
                                 <thead>
                                     <tr>
-                                        <th class="text-uppercase text-secondary font-weight-bolder opacity-7">Mahasiswa</th>
-                                        @foreach($topics as $t)
-                                        <th class="text-center text-uppercase text-secondary font-weight-bolder opacity-7" title="{{ $t }}">C{{ $loop->iteration }}</th>
-                                        @endforeach
-                                        <th class="text-center text-uppercase text-secondary font-weight-bolder opacity-7">Jarak Min</th>
-                                        <th class="text-center text-uppercase text-secondary font-weight-bolder opacity-7">PC1</th>
-                                        <th class="text-center text-uppercase text-secondary font-weight-bolder opacity-7">PC2</th>
-                                        <th class="text-center text-uppercase text-secondary font-weight-bolder opacity-7">Cluster</th>
-                                    </tr>
+                                         <th class="text-center text-uppercase text-secondary font-weight-bolder opacity-7" style="width: 5%">No</th>
+                                         <th class="text-uppercase text-secondary font-weight-bolder opacity-7">Mahasiswa</th>
+                                         @foreach($topics as $t)
+                                         <th class="text-center text-uppercase text-secondary font-weight-bolder opacity-7" title="{{ $t }}">C{{ $loop->iteration }}</th>
+                                         @endforeach
+                                         <th class="text-center text-uppercase text-secondary font-weight-bolder opacity-7">Jarak Min</th>
+                                         <th class="text-center text-uppercase text-secondary font-weight-bolder opacity-7">PC1</th>
+                                         <th class="text-center text-uppercase text-secondary font-weight-bolder opacity-7">PC2</th>
+                                         <th class="text-center text-uppercase text-secondary font-weight-bolder opacity-7">Cluster</th>
+                                     </tr>
                                 </thead>
                                 <tbody>
                                      @foreach($h['results'] as $res)
                                      <tr {!! ($res['moved'] ?? false) ? 'style="background-color: rgba(251, 140, 0, 0.08) !important;"' : '' !!}>
+                                         <td class="text-center font-weight-bold">{{ $loop->iteration }}</td>
                                          <td class="px-4">
                                              {{ $res['mahasiswa']->nama }}
                                              @if($res['moved'] ?? false)
