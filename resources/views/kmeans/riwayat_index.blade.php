@@ -50,6 +50,7 @@
                                             <i class="material-icons text-xs">visibility</i> Lihat
                                         </a>
                                         
+                                        @if(!str_contains(strtolower(auth()->user()->role), 'dosen'))
                                         <form action="{{ route('kmeans.riwayat.destroy', $r->id_riwayat) }}" method="POST" class="delete-form d-inline-block">
                                             @csrf
                                             @method('DELETE')
@@ -57,6 +58,7 @@
                                                 <i class="material-icons text-xs">delete</i> Hapus
                                             </button>
                                         </form>
+                                        @endif
                                     </div>
                                 </td>
                             </tr>

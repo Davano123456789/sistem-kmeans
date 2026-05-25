@@ -11,7 +11,7 @@ Route::get('login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('login', [AuthController::class, 'authenticate']);
 Route::post('logout', [AuthController::class, 'logout'])->name('logout');
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'check.role'])->group(function () {
     Route::get('/', function () {
         return view('dashboard');
     });

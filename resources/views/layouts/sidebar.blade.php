@@ -8,6 +8,7 @@
   <hr class="horizontal dark mt-0 mb-2">
   <div class="collapse navbar-collapse w-auto max-height-vh-100" id="sidenav-collapse-main">
     <ul class="navbar-nav">
+      @if(!str_contains(strtolower(auth()->user()->role), 'dosen'))
       <li class="nav-item">
         <a class="nav-link text-dark {{ Request::is('/') ? 'active bg-gradient-dark text-white' : '' }}" href="/">
           <div class="{{ Request::is('/') ? 'text-white' : 'text-dark' }} text-center me-2 d-flex align-items-center justify-content-center">
@@ -40,6 +41,7 @@
           <span class="nav-link-text ms-1">Proses K-Means</span>
         </a>
       </li>
+      @endif
       <li class="nav-item">
         <a class="nav-link text-dark {{ Request::is('hasil-cluster*') ? 'active bg-gradient-dark text-white' : '' }}" href="{{ route('kmeans.riwayat.index') }}">
           <div class="{{ Request::is('hasil-cluster*') ? 'text-white' : 'text-dark' }} text-center me-2 d-flex align-items-center justify-content-center">
@@ -48,6 +50,7 @@
           <span class="nav-link-text ms-1">Hasil Cluster</span>
         </a>
       </li>
+      @if(!str_contains(strtolower(auth()->user()->role), 'dosen'))
       <li class="nav-item">
         <a class="nav-link text-dark {{ Request::is('pengguna*') ? 'active bg-gradient-dark text-white' : '' }}" href="{{ route('pengguna.index') }}">
           <div class="{{ Request::is('pengguna*') ? 'text-white' : 'text-dark' }} text-center me-2 d-flex align-items-center justify-content-center">
@@ -56,6 +59,7 @@
           <span class="nav-link-text ms-1">Manajemen User</span>
         </a>
       </li>
+      @endif
       <li class="nav-item mt-3">
         <h6 class="ps-4 ms-2 text-uppercase text-xs text-dark font-weight-bolder opacity-8">Account pages</h6>
       </li>
