@@ -174,7 +174,7 @@
                                         <th class="text-center text-uppercase text-secondary font-weight-bolder opacity-7">Jarak Min</th>
                                         <th class="text-center text-uppercase text-secondary font-weight-bolder opacity-7">PC1</th>
                                         <th class="text-center text-uppercase text-secondary font-weight-bolder opacity-7">PC2</th>
-                                        <th class="text-center text-uppercase text-secondary font-weight-bolder opacity-7">Rekomendasi Topik</th>
+                                        <th class="text-center text-uppercase text-secondary font-weight-bolder opacity-7">Cluster</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -189,7 +189,7 @@
                                         <td class="text-center text-secondary font-weight-bold">{{ number_format($res['PC2'], 3) }}</td>
                                         <td class="text-center">
                                             <span class="badge badge-sm bg-gradient-{{ ['primary', 'info', 'success', 'warning'][$res['cluster']-1] }}">
-                                                {{ $topics[$res['cluster']-1] }}
+                                                Cluster {{ $res['cluster'] }}
                                             </span>
                                         </td>
                                     </tr>
