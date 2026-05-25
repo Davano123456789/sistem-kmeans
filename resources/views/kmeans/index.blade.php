@@ -39,7 +39,7 @@
                                     <option value="">-- Pilih Mahasiswa --</option>
                                     @foreach($mahasiswa as $mhs)
                                         <option value="{{ $mhs->id_mahasiswa }}" 
-                                            {{ (isset($selectedCentroids) && in_array($mhs->id_mahasiswa, $selectedCentroids)) || old('centroids.'.$i-1) == $mhs->id_mahasiswa ? 'selected' : '' }}>
+                                            {{ (isset($selectedCentroids) && ($selectedCentroids[$i-1] ?? null) == $mhs->id_mahasiswa) || old('centroids.' . ($i-1)) == $mhs->id_mahasiswa ? 'selected' : '' }}>
                                             {{ $mhs->nama }}{{ $mhs->npm ? ' (' . $mhs->npm . ')' : '' }}
                                         </option>
                                     @endforeach
@@ -152,7 +152,7 @@
                                 <tbody>
                                     @foreach($h['centroids'] as $cIdx => $cVals)
                                     <tr>
-                                        <td class="font-weight-bold text-start">{{ $topics[$cIdx] }}</td>
+                                        <td class="font-weight-bold text-start">{{ isset($selectedCentroids[$cIdx]) && ($m = $mahasiswa->firstWhere('id_mahasiswa', $selectedCentroids[$cIdx])) ? $m->nama : $topics[$cIdx] }}</td>
                                         @foreach($cVals as $v)
                                         <td>{{ number_format($v, 2) }}</td>
                                         @endforeach
