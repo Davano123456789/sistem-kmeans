@@ -23,9 +23,9 @@
                         @php
                             $topics = [
                                 'Application Developer',
-                                'IT Auditor & Governance',
+                                'Data Analyst',
                                 'System Analyst',
-                                'Data Analyst'
+                                'IT Auditor & Governance'
                             ];
                         @endphp
 
@@ -331,9 +331,9 @@
         ];
         const topicNames = [
             'Application Developer',
-            'IT Auditor & Governance',
+            'Data Analyst',
             'System Analyst',
-            'Data Analyst'
+            'IT Auditor & Governance'
         ];
 
         @foreach($history as $h)

@@ -250,9 +250,9 @@ class KMeansController extends Controller
         
         $topics = [
             'Application Developer',
-            'IT Auditor & Governance',
+            'Data Analyst',
             'System Analyst',
-            'Data Analyst'
+            'IT Auditor & Governance'
         ];
         
         $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
