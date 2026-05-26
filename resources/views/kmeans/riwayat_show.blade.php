@@ -10,9 +10,9 @@
         <div class="card mb-4">
             <div class="card-header p-3 bg-gradient-dark text-white border-radius-lg mx-3 mt-n4 position-relative z-index-2 d-flex flex-column flex-md-row justify-content-between align-items-md-center">
                 <div>
-                    <h5 class="text-white mb-0" style="font-family: 'Outfit', sans-serif;">{{ $riwayat->nama_riwayat }}</h5>
+                    <h5 class="text-white mb-0" style="font-family: 'Outfit', sans-serif;">{{ preg_replace('/\s+\d{2}:\d{2}$/', '', $riwayat->nama_riwayat) }}</h5>
                     <p class="text-xs opacity-8 mb-0">
-                        Disimpan pada: {{ $riwayat->tanggal->translatedFormat('d F Y, H:i') }} | Total Iterasi: {{ $riwayat->iterasi_total }} | Jumlah Data: {{ $riwayat->jumlah_mahasiswa }} Mahasiswa
+                        Disimpan pada: {{ $riwayat->tanggal->translatedFormat('d F Y') }} | Total Iterasi: {{ $riwayat->iterasi_total }} | Jumlah Data: {{ $riwayat->jumlah_mahasiswa }} Mahasiswa
                     </p>
                 </div>
                 {{--

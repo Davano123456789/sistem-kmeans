@@ -31,11 +31,11 @@
                             <tr>
                                 <td class="align-middle text-start font-weight-bold ps-2">{{ $loop->iteration }}</td>
                                 <td class="align-middle text-start">
-                                    <h6 class="mb-0 text-sm font-weight-bold text-dark">{{ $r->nama_riwayat }}</h6>
+                                    <h6 class="mb-0 text-sm font-weight-bold text-dark">{{ preg_replace('/\s+\d{2}:\d{2}$/', '', $r->nama_riwayat) }}</h6>
                                 </td>
                                 <td class="align-middle text-start">
                                     <span class="text-xs text-secondary font-weight-bold">
-                                        {{ $r->tanggal->translatedFormat('d F Y, H:i') }}
+                                        {{ $r->tanggal->translatedFormat('d F Y') }}
                                     </span>
                                 </td>
                                 <td class="align-middle text-center font-weight-bold">

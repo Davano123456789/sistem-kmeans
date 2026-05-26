@@ -133,7 +133,7 @@
                         @endforeach
                         <div class="input-group input-group-outline is-filled my-0" style="flex-grow: 1;">
                             <label class="form-label">Nama Riwayat</label>
-                            <input type="text" name="nama_riwayat" class="form-control" value="Hasil Cluster - {{ date('d-m-Y H:i') }}" required style="height: 38px;">
+                            <input type="text" name="nama_riwayat" class="form-control" value="Hasil Cluster - {{ date('d-m-Y') }}" required style="height: 38px;">
                         </div>
                         <button type="submit" class="btn btn-success mb-0 d-flex align-items-center gap-1 text-nowrap" style="height: 38px;">
                             <i class="material-icons text-md">save</i> Simpan Riwayat
