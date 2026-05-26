@@ -15,6 +15,7 @@
                         Disimpan pada: {{ $riwayat->tanggal->translatedFormat('d F Y, H:i') }} | Total Iterasi: {{ $riwayat->iterasi_total }} | Jumlah Data: {{ $riwayat->jumlah_mahasiswa }} Mahasiswa
                     </p>
                 </div>
+                {{--
                 <div class="d-flex gap-2 mt-3 mt-md-0">
                     <a href="{{ route('kmeans.riwayat.index') }}" class="btn btn-sm btn-outline-light mb-0 d-flex align-items-center gap-1">
                         <i class="material-icons text-sm">arrow_back</i> Kembali ke Riwayat
@@ -23,6 +24,7 @@
                         <i class="material-icons text-sm">file_download</i> Ekspor Excel
                     </a>
                 </div>
+                --}}
             </div>
             <div class="card-body p-4">
                 <div class="row">
