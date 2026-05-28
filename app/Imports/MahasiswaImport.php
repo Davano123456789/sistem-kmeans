@@ -58,7 +58,7 @@ class MahasiswaImport implements ToCollection
         // Default indices untuk kuesioner (A1-A4, B1-B4, D1-D4) sesuai format standar
         $a1Idx = 5; $a2Idx = 6; $a3Idx = 7; $a4Idx = 8;
         $b1Idx = 9; $b2Idx = 10; $b3Idx = 11; $b4Idx = 12;
-        $d1Idx = 14; $d2Idx = 15; $d3Idx = 16; $d4Idx = 17;
+        $d1Idx = 16; $d2Idx = 14; $d3Idx = 15; $d4Idx = 17;
 
         foreach ($header as $idx => $col) {
             if ($col === null || $col === '') continue;
@@ -103,16 +103,16 @@ class MahasiswaImport implements ToCollection
                 $b4Idx = $idx;
             }
             
-            if ($colLower === 'd1' || (strpos($colLower, 'nilai') !== false && strpos($colLower, 'data analyst') !== false)) {
+            if ($colLower === 'd1' || (strpos($colLower, 'nilai') !== false && (strpos($colLower, 'application developer') !== false || strpos($colLower, 'pemrograman') !== false || strpos($colLower, 'developer') !== false))) {
                 $d1Idx = $idx;
             }
-            if ($colLower === 'd2' || (strpos($colLower, 'nilai') !== false && strpos($colLower, 'system analyst') !== false)) {
+            if ($colLower === 'd2' || (strpos($colLower, 'nilai') !== false && (strpos($colLower, 'data analyst') !== false || strpos($colLower, 'analis data') !== false))) {
                 $d2Idx = $idx;
             }
-            if ($colLower === 'd3' || (strpos($colLower, 'nilai') !== false && strpos($colLower, 'application developer') !== false)) {
+            if ($colLower === 'd3' || (strpos($colLower, 'nilai') !== false && (strpos($colLower, 'system analyst') !== false || strpos($colLower, 'analis sistem') !== false || strpos($colLower, 'analis system') !== false))) {
                 $d3Idx = $idx;
             }
-            if ($colLower === 'd4' || (strpos($colLower, 'nilai') !== false && strpos($colLower, 'it auditor') !== false)) {
+            if ($colLower === 'd4' || (strpos($colLower, 'nilai') !== false && (strpos($colLower, 'it auditor') !== false || strpos($colLower, 'manajemen it') !== false || strpos($colLower, 'tata kelola') !== false))) {
                 $d4Idx = $idx;
             }
         }

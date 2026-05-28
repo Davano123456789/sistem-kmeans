@@ -13,7 +13,7 @@
         </div>
         <div class="text-end pt-1">
           <p class="text-sm mb-0 text-capitalize">Total Mahasiswa</p>
-          <h4 class="mb-0">0</h4>
+          <h4 class="mb-0">{{ $totalMahasiswa }}</h4>
         </div>
       </div>
       <hr class="dark horizontal my-0">
@@ -30,7 +30,7 @@
         </div>
         <div class="text-end pt-1">
           <p class="text-sm mb-0 text-capitalize">Total User</p>
-          <h4 class="mb-0">1</h4>
+          <h4 class="mb-0">{{ $totalUser }}</h4>
         </div>
       </div>
       <hr class="dark horizontal my-0">
@@ -43,16 +43,16 @@
     <div class="card">
       <div class="card-header p-3 pt-2">
         <div class="icon icon-lg icon-shape bg-gradient-dark shadow-dark text-center border-radius-xl mt-n4 position-absolute">
-          <i class="material-icons-round opacity-10">category</i>
+          <i class="material-icons-round opacity-10">assignment</i>
         </div>
         <div class="text-end pt-1">
-          <p class="text-sm mb-0 text-capitalize">Jumlah Cluster</p>
-          <h4 class="mb-0">4</h4>
+          <p class="text-sm mb-0 text-capitalize">Riwayat Cluster</p>
+          <h4 class="mb-0">{{ $totalRiwayat }}</h4>
         </div>
       </div>
       <hr class="dark horizontal my-0">
       <div class="card-footer p-3">
-        <p class="mb-0"><span class="text-dark text-sm font-weight-bolder">K-Means </span>K=4</p>
+        <p class="mb-0"><span class="text-dark text-sm font-weight-bolder">Sesi K-Means </span>tersimpan</p>
       </div>
     </div>
   </div>
@@ -64,7 +64,7 @@
         </div>
         <div class="text-end pt-1">
           <p class="text-sm mb-0 text-capitalize">File Excel</p>
-          <h4 class="mb-0">0</h4>
+          <h4 class="mb-0">{{ $totalFile }}</h4>
         </div>
       </div>
       <hr class="dark horizontal my-0">
@@ -85,8 +85,8 @@
       </div>
       <div class="card-body px-0 pb-2">
         <div class="p-4">
-            <h5>Halo, Koordinator Skripsi!</h5>
-            <p>Selamat datang di Sistem K-Means untuk Penentuan Topik Skripsi. Silakan gunakan menu di samping untuk mulai mengelola data dan melakukan proses clustering.</p>
+            <h5>Halo, {{ auth()->user()->nama }}!</h5>
+            <p>Selamat datang di Sistem K-Means untuk Penentuan Topik Skripsi. Anda masuk sebagai <strong>{{ ucwords(auth()->user()->role) }}</strong>. Silakan gunakan menu di samping untuk mulai mengelola data dan melihat hasil clustering.</p>
         </div>
       </div>
     </div>

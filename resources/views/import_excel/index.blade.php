@@ -14,11 +14,21 @@
                         <i class="material-icons opacity-10 text-white" style="font-size: 32px; line-height: 1;">cleaning_services</i>
                     </div>
                     <div>
-                        <h5 class="mb-0 font-weight-bold text-dark" style="font-family: 'Outfit', sans-serif;">Laporan Hasil Pembersihan Data (Data Cleaning)</h5>
+                        <h5 class="mb-0 font-weight-bold text-dark" style="font-family: 'Outfit', sans-serif;">
+                            Laporan Hasil Pembersihan Data (Data Cleaning)
+                            @if(isset(session('cleaning_report')['file_name']))
+                                <span class="text-secondary text-sm font-weight-normal" style="font-size: 0.85rem;"> - File: <strong class="text-success">{{ session('cleaning_report')['file_name'] }}</strong></span>
+                            @endif
+                        </h5>
                         <p class="text-xs text-secondary mb-0">Proses penyaringan, pembatasan institusi NPM, validasi IPK, dan kelayakan mata kuliah proposal (RPS)</p>
                     </div>
                 </div>
-                <span class="badge text-xs font-weight-bold px-3 py-2 border-radius-lg" style="background-color: rgba(76, 175, 80, 0.12); color: #2e7d32; border: 1px solid rgba(76, 175, 80, 0.2);">check_circle CLEANING SELESAI</span>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge text-xs font-weight-bold px-3 py-2 border-radius-lg" style="background-color: rgba(76, 175, 80, 0.12); color: #2e7d32; border: 1px solid rgba(76, 175, 80, 0.2);">check_circle CLEANING SELESAI</span>
+                    <a href="{{ route('import-excel.clear-report') }}" class="btn-close-custom text-secondary p-0 mb-0 d-flex align-items-center justify-content-center" title="Tutup Laporan Pembersihan Data" style="cursor: pointer; width: 32px; height: 32px; border-radius: 50%; background: #f0f2f5; transition: all 0.2s ease; border: none; text-decoration: none;" onmouseover="this.style.backgroundColor='#e4e6eb'; this.style.color='#000';" onmouseout="this.style.backgroundColor='#f0f2f5'; this.style.color='#7b809a';">
+                        <i class="material-icons" style="font-size: 16px;">close</i>
+                    </a>
+                </div>
             </div>
             <div class="card-body px-4 py-3">
                 <!-- Stat Cards -->
@@ -186,9 +196,14 @@
                                 </td>
                                 <td class="align-middle text-center">
                                     <div class="d-flex justify-content-center align-items-center gap-3">
-                                        <a href="{{ route('mahasiswa.index') }}" class="btn btn-link text-info p-0 mb-0" title="Lihat Data">
+                                        <a href="{{ route('mahasiswa.index') }}" class="btn btn-link text-info p-0 mb-0" title="Lihat Data Mahasiswa">
                                             <i class="material-icons text-lg">visibility</i>
                                         </a>
+                                        @if($file->laporan_cleaning)
+                                        <a href="{{ route('import-excel.show-report', $file->id_file) }}" class="btn btn-link text-success p-0 mb-0" title="Lihat Laporan Pembersihan Data">
+                                            <i class="material-icons text-lg">cleaning_services</i>
+                                        </a>
+                                        @endif
                                         <form action="{{ route('import-excel.destroy', $file->id_file) }}" method="POST" id="delete-form-{{ $file->id_file }}" class="d-inline">
                                             @csrf
                                             @method('DELETE')

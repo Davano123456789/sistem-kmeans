@@ -13,11 +13,17 @@ Route::post('logout', [AuthController::class, 'logout'])->name('logout');
 
 Route::middleware(['auth', 'check.role'])->group(function () {
     Route::get('/', function () {
-        return view('dashboard');
+        $totalMahasiswa = \App\Models\Mahasiswa::count();
+        $totalUser = \App\Models\User::count();
+        $totalRiwayat = \App\Models\RiwayatClustering::count();
+        $totalFile = \App\Models\FileExcel::count();
+        return view('dashboard', compact('totalMahasiswa', 'totalUser', 'totalRiwayat', 'totalFile'));
     });
 
     Route::resource('pengguna', PenggunaController::class);
     Route::resource('mahasiswa', MahasiswaController::class);
+    Route::get('import-excel/clear-report', [ImportExcelController::class, 'clearReport'])->name('import-excel.clear-report');
+    Route::get('import-excel/{id}/report', [ImportExcelController::class, 'showReport'])->name('import-excel.show-report');
     Route::resource('import-excel', ImportExcelController::class);
     Route::get('kmeans', [KMeansController::class, 'index'])->name('kmeans.index');
     Route::post('kmeans/hitung', [KMeansController::class, 'hitung'])->name('kmeans.hitung');

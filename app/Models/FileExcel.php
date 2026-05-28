@@ -16,6 +16,11 @@ class FileExcel extends Model
         'nama',
         'tanggal_upload',
         'id_pengguna',
+        'laporan_cleaning',
+    ];
+
+    protected $casts = [
+        'laporan_cleaning' => 'array',
     ];
 
     public function pengguna()

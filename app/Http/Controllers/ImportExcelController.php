@@ -40,10 +40,44 @@ class ImportExcelController extends Controller
         $import = new MahasiswaImport($file_entry->id_file);
         Excel::import($import, $file);
         $report = $import->getReport();
+        
+        // Tambahkan nama file ke laporan
+        $report['file_name'] = $file_entry->nama;
+
+        // Simpan laporan ke database di riwayat file tersebut
+        $file_entry->update([
+            'laporan_cleaning' => $report
+        ]);
+
+        // Simpan laporan ke persistent session agar tidak hilang saat di-refresh
+        session(['cleaning_report' => $report]);
 
         return redirect()->route('import-excel.index')
-            ->with('success', 'Data berhasil diimport dan dibersihkan.')
-            ->with('cleaning_report', $report);
+            ->with('success', 'Data berhasil diimport dan dibersihkan.');
+    }
+
+    public function showReport($id)
+    {
+        $file = FileExcel::findOrFail($id);
+        
+        if ($file->laporan_cleaning) {
+            $report = $file->laporan_cleaning;
+            // Inject nama file secara dinamis untuk kompatibilitas riwayat lama
+            if (!isset($report['file_name'])) {
+                $report['file_name'] = $file->nama;
+            }
+            
+            session(['cleaning_report' => $report]);
+            return redirect()->route('import-excel.index')->with('success', 'Berhasil memuat laporan pembersihan data untuk file: ' . $file->nama);
+        }
+
+        return redirect()->route('import-excel.index')->with('error', 'Laporan pembersihan data tidak ditemukan untuk file ini.');
+    }
+
+    public function clearReport()
+    {
+        session()->forget('cleaning_report');
+        return redirect()->route('import-excel.index');
     }
 
     public function destroy($id)
@@ -58,6 +92,9 @@ class ImportExcelController extends Controller
         
         // Hapus record filenya
         $file->delete();
+
+        // Hapus laporan dari session ketika file dihapus
+        session()->forget('cleaning_report');
 
         return redirect()->route('import-excel.index')->with('success', 'Riwayat file dan semua data mahasiswa terkait berhasil dihapus total.');
     }
