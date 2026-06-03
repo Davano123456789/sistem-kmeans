@@ -96,10 +96,25 @@ class KMeansController extends Controller
             // =====================================
             // 📊 HITUNG PCA UNTUK ITERASI INI
             // =====================================
-            // Format input: Array Nx4 (jarak C1, C2, C3, C4 dari masing-masing mahasiswa)
+            // Format input: Array Nx12 (12 fitur kuesioner asli tiap mahasiswa)
+            // Ini adalah standar akademik: PCA mereduksi ruang fitur asli ke 2D untuk visualisasi
             $pcaInput = [];
             foreach ($iterResults as $res) {
-                $pcaInput[] = $res['distances'];
+                $mhs = $res['mahasiswa'];
+                $pcaInput[] = [
+                    $mhs->nilaiKuesioner->a1 ?? 0,
+                    $mhs->nilaiKuesioner->a2 ?? 0,
+                    $mhs->nilaiKuesioner->a3 ?? 0,
+                    $mhs->nilaiKuesioner->a4 ?? 0,
+                    $mhs->nilaiKuesioner->b1 ?? 0,
+                    $mhs->nilaiKuesioner->b2 ?? 0,
+                    $mhs->nilaiKuesioner->b3 ?? 0,
+                    $mhs->nilaiKuesioner->b4 ?? 0,
+                    $mhs->nilaiKuesioner->d1 ?? 0,
+                    $mhs->nilaiKuesioner->d2 ?? 0,
+                    $mhs->nilaiKuesioner->d3 ?? 0,
+                    $mhs->nilaiKuesioner->d4 ?? 0,
+                ];
             }
 
             $pcaResult = $this->calculatePCA($pcaInput);
@@ -661,9 +676,24 @@ class KMeansController extends Controller
             }
 
             // 📊 HITUNG PCA UNTUK ITERASI INI
+            // Format input: Array Nx12 (12 fitur kuesioner asli tiap mahasiswa)
             $pcaInput = [];
             foreach ($iterResults as $res) {
-                $pcaInput[] = $res['distances'];
+                $mhs = $res['mahasiswa'];
+                $pcaInput[] = [
+                    $mhs->nilaiKuesioner->a1 ?? 0,
+                    $mhs->nilaiKuesioner->a2 ?? 0,
+                    $mhs->nilaiKuesioner->a3 ?? 0,
+                    $mhs->nilaiKuesioner->a4 ?? 0,
+                    $mhs->nilaiKuesioner->b1 ?? 0,
+                    $mhs->nilaiKuesioner->b2 ?? 0,
+                    $mhs->nilaiKuesioner->b3 ?? 0,
+                    $mhs->nilaiKuesioner->b4 ?? 0,
+                    $mhs->nilaiKuesioner->d1 ?? 0,
+                    $mhs->nilaiKuesioner->d2 ?? 0,
+                    $mhs->nilaiKuesioner->d3 ?? 0,
+                    $mhs->nilaiKuesioner->d4 ?? 0,
+                ];
             }
 
             $pcaResult = $this->calculatePCA($pcaInput);
