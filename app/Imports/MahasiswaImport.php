@@ -134,6 +134,7 @@ class MahasiswaImport implements ToCollection
             'rps_invalid' => [],
         ];
         
+        $existingNPMs = Mahasiswa::pluck('npm')->map(fn($item) => trim($item))->toArray();
         $seenNPMs = [];
         $seenNames = [];
 
@@ -193,6 +194,14 @@ class MahasiswaImport implements ToCollection
                     'nama' => $nama,
                     'npm' => $npmClean,
                     'reason' => 'NPM tidak diawali dengan "13."'
+                ];
+                continue;
+            }
+            if (in_array($npmClean, $existingNPMs)) {
+                $logDeleted['npm_invalid'][] = [
+                    'nama' => $nama,
+                    'npm' => $npmClean,
+                    'reason' => 'Sudah terdaftar di database'
                 ];
                 continue;
             }
