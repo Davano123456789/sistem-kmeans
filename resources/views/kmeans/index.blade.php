@@ -17,11 +17,12 @@
                 <form action="{{ route('kmeans.hitung') }}" method="POST">
                     @csrf
                     <div class="mb-3">
-                        <h6 class="text-sm font-weight-bold">Pilih Centroid Awal (4 Mahasiswa)</h6>
-                        <p class="text-xs text-secondary">Tentukan mahasiswa yang akan menjadi pusat cluster pertama.</p>
+                        <h6 class="text-sm font-weight-bold">Pengaturan Cluster</h6>
+                        <p class="text-xs text-secondary">Tentukan jumlah cluster dan pusat awalnya.</p>
                         
                         @php
-                            $topics = [
+                            $k = $k_jumlah ?? 4;
+                            $topics = $nama_clusters ?? [
                                 'Application Developer',
                                 'Data Analyst',
                                 'System Analyst',
@@ -29,24 +30,43 @@
                             ];
                         @endphp
 
-                        @for($i = 1; $i <= 4; $i++)
-                        <div class="mb-3">
-                            <label class="form-label text-xs font-weight-bold">
-                                Mahasiswa {{ $i }} ({{ $topics[$i-1] }})
-                            </label>
-                            <div class="mb-2">
-                                <select name="centroids[]" class="select-search" required>
-                                    <option value="">-- Pilih Mahasiswa --</option>
-                                    @foreach($mahasiswa as $mhs)
-                                        <option value="{{ $mhs->id_mahasiswa }}" 
-                                            {{ (isset($selectedCentroids) && ($selectedCentroids[$i-1] ?? null) == $mhs->id_mahasiswa) || old('centroids.' . ($i-1)) == $mhs->id_mahasiswa ? 'selected' : '' }}>
-                                            {{ $mhs->nama }}{{ $mhs->npm ? ' (' . $mhs->npm . ')' : '' }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
+                        <div class="mb-4">
+                            <label class="form-label text-xs font-weight-bold">Jumlah Cluster (K)</label>
+                            <input type="number" name="jumlah_cluster" id="jumlah_cluster" class="form-control border px-3" value="{{ $k }}" min="2" max="10" required>
                         </div>
-                        @endfor
+
+                        <div id="centroid-container">
+                            @for($i = 1; $i <= $k; $i++)
+                            <div class="centroid-item mb-3 p-3 border border-radius-md bg-gray-50">
+                                <h6 class="text-xs font-weight-bold mb-2">Cluster {{ $i }}</h6>
+                                
+                                <div class="mb-2">
+                                    <label class="form-label text-xs">Nama Cluster / Topik</label>
+                                    <input type="text" name="nama_clusters[]" class="form-control border px-2 py-1 text-sm" value="{{ $topics[$i-1] ?? 'Cluster '.$i }}" required>
+                                </div>
+
+                                <div class="mb-0">
+                                    <label class="form-label text-xs">Centroid Awal</label>
+                                    <select name="centroids[]" class="select-search" required>
+                                        <option value="">-- Pilih Mahasiswa --</option>
+                                        @foreach($mahasiswa as $mhs)
+                                            <option value="{{ $mhs->id_mahasiswa }}" 
+                                                {{ (isset($selectedCentroids) && ($selectedCentroids[$i-1] ?? null) == $mhs->id_mahasiswa) || old('centroids.' . ($i-1)) == $mhs->id_mahasiswa ? 'selected' : '' }}>
+                                                {{ $mhs->nama }}{{ $mhs->npm ? ' (' . $mhs->npm . ')' : '' }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            </div>
+                            @endfor
+                        </div>
+
+                        <template id="mahasiswa-options">
+                            <option value="">-- Pilih Mahasiswa --</option>
+                            @foreach($mahasiswa as $mhs)
+                                <option value="{{ $mhs->id_mahasiswa }}">{{ $mhs->nama }}{{ $mhs->npm ? ' (' . $mhs->npm . ')' : '' }}</option>
+                            @endforeach
+                        </template>
                     </div>
 
                     <div class="mt-4">
@@ -114,6 +134,8 @@
             </div>
         </div>
     </div>
+</div>
+
 @if(isset($history))
 <div class="row mt-4" id="hasil-cluster">
     <div class="col-12">
@@ -216,7 +238,8 @@
                                         <td class="text-center text-secondary font-weight-bold">{{ number_format($res['PC1'], 3) }}</td>
                                         <td class="text-center text-secondary font-weight-bold">{{ number_format($res['PC2'], 3) }}</td>
                                         <td class="text-center">
-                                            <span class="badge badge-sm bg-gradient-{{ ['primary', 'info', 'success', 'warning'][$res['cluster']-1] }}">
+                                            @php $colorClasses = ['primary', 'info', 'success', 'warning', 'danger', 'secondary', 'dark', 'light', 'primary', 'info']; @endphp
+                                            <span class="badge badge-sm bg-gradient-{{ $colorClasses[($res['cluster']-1) % 10] }}">
                                                 Cluster {{ $res['cluster'] }}
                                             </span>
                                         </td>
@@ -228,10 +251,11 @@
                         <h6 class="font-weight-bold px-2 mt-4">Anggota Kelompok (Cluster)</h6>
                         <div class="row mb-4">
                             @foreach($h['clusters'] as $cIdx => $members)
-                            <div class="col-md-3">
+                            <div class="col-md-4 col-lg-3">
                                 <div class="card shadow-none border">
-                                    <div class="card-header p-2 bg-gradient-{{ ['primary', 'info', 'success', 'warning'][$cIdx] }} text-white text-center">
-                                        <h6 class="text-white mb-0 text-xs">{{ $topics[$cIdx] }}</h6>
+                                    @php $colorClasses = ['primary', 'info', 'success', 'warning', 'danger', 'secondary', 'dark', 'light', 'primary', 'info']; @endphp
+                                    <div class="card-header p-2 bg-gradient-{{ $colorClasses[$cIdx % 10] }} text-white text-center">
+                                        <h6 class="text-white mb-0 text-xs">{{ $topics[$cIdx] ?? ('Cluster ' . ($cIdx + 1)) }}</h6>
                                         <small class="text-xs">({{ count($members) }} Orang)</small>
                                         <div class="text-xxs opacity-9 mt-1" style="font-size: 0.65rem;">
                                             Centroid PCA:<br>
@@ -349,20 +373,28 @@
             'rgba(233, 30, 99, 1)',   // Primary - Pinkish Red
             'rgba(3, 169, 244, 1)',  // Info - Cyan/Blue
             'rgba(76, 175, 80, 1)',   // Success - Green
-            'rgba(251, 140, 0, 1)'   // Warning - Orange
+            'rgba(251, 140, 0, 1)',   // Warning - Orange
+            'rgba(244, 67, 54, 1)',   // Danger - Red
+            'rgba(158, 158, 158, 1)', // Secondary - Grey
+            'rgba(52, 71, 103, 1)',   // Dark - Blueish Dark
+            'rgba(173, 181, 189, 1)', // Light Grey
+            'rgba(233, 30, 99, 1)',
+            'rgba(3, 169, 244, 1)'
         ];
         const bgColors = [
             'rgba(233, 30, 99, 0.08)',
             'rgba(3, 169, 244, 0.08)',
             'rgba(76, 175, 80, 0.08)',
-            'rgba(251, 140, 0, 0.08)'
+            'rgba(251, 140, 0, 0.08)',
+            'rgba(244, 67, 54, 0.08)',
+            'rgba(158, 158, 158, 0.08)',
+            'rgba(52, 71, 103, 0.08)',
+            'rgba(173, 181, 189, 0.08)',
+            'rgba(233, 30, 99, 0.08)',
+            'rgba(3, 169, 244, 0.08)'
         ];
-        const topicNames = [
-            'Application Developer',
-            'Data Analyst',
-            'System Analyst',
-            'IT Auditor & Governance'
-        ];
+        const topicNames = {!! json_encode($nama_clusters ?? []) !!};
+        const k = {{ $k }};
 
         @foreach($history as $h)
         (function() {
@@ -371,7 +403,7 @@
             const datasets = [];
 
             // 1. Kelompokkan titik mahasiswa per cluster
-            const clusterPoints = [[], [], [], []];
+            const clusterPoints = Array.from({length: k}, () => []);
             @foreach($h['results'] as $res)
                 clusterPoints[{{ $res['cluster'] - 1 }}].push({
                     x: {{ $res['PC1'] }},
@@ -399,15 +431,16 @@
             ];
 
             // Masukkan data ke dataset Chart.js secara berurutan
-            for (let c = 0; c < 4; c++) {
+            for (let c = 0; c < k; c++) {
+                let colorIndex = c % 10;
                 // A. Garis Batas Convex Hull (jika minimal 3 titik)
                 if (hulls[c] && hulls[c].length > 0) {
                     datasets.push({
                         type: 'line',
-                        label: 'Batas ' + topicNames[c],
+                        label: 'Batas ' + (topicNames[c] || 'Cluster ' + (c+1)),
                         data: hulls[c],
-                        borderColor: colors[c],
-                        backgroundColor: bgColors[c],
+                        borderColor: colors[colorIndex],
+                        backgroundColor: bgColors[colorIndex],
                         fill: true,
                         borderWidth: 2,
                         pointRadius: 0,
@@ -418,12 +451,12 @@
                 }
 
                 // B. Scatter Points Mahasiswa
-                if (clusterPoints[c].length > 0) {
+                if (clusterPoints[c] && clusterPoints[c].length > 0) {
                     datasets.push({
                         type: 'scatter',
-                        label: topicNames[c],
+                        label: 'Anggota ' + (topicNames[c] || 'Cluster ' + (c+1)),
                         data: clusterPoints[c],
-                        backgroundColor: colors[c],
+                        backgroundColor: colors[colorIndex],
                         borderColor: '#ffffff',
                         borderWidth: 1.5,
                         pointRadius: 6,
@@ -441,16 +474,16 @@
                     });
                 }
 
-                // C. Centroid PCA (Square Marker)
-                if (centroids[c] && (centroids[c].x !== 0 || centroids[c].y !== 0)) {
+                // C. Titik Centroid PCA (KOTAK BESAR)
+                if (centroids[c]) {
                     datasets.push({
                         type: 'scatter',
-                        label: 'Centroid ' + topicNames[c],
+                        label: 'Centroid ' + (c + 1),
                         data: [centroids[c]],
-                        backgroundColor: 'rgba(0, 0, 0, 0.12)',
-                        borderColor: '#000000',
+                        backgroundColor: '#1a1a1a', 
+                        borderColor: colors[colorIndex], 
                         borderWidth: 2,
-                        pointStyle: 'rect', // Kotak/Square
+                        pointStyle: 'rect', 
                         pointRadius: 16,
                         pointHoverRadius: 18,
                         z: 10,
@@ -583,6 +616,51 @@
                     direction: "asc"
                 }
             });
+        });
+
+        // Handle Jumlah Cluster change
+        document.getElementById('jumlah_cluster').addEventListener('change', function() {
+            let k = parseInt(this.value);
+            if (k < 2) return;
+            
+            let container = document.getElementById('centroid-container');
+            let currentItems = container.querySelectorAll('.centroid-item').length;
+            let optionsTemplate = document.getElementById('mahasiswa-options').innerHTML;
+            
+            if (k > currentItems) {
+                // Add new items
+                for (let i = currentItems + 1; i <= k; i++) {
+                    let div = document.createElement('div');
+                    div.className = 'centroid-item mb-3 p-3 border border-radius-md bg-gray-50';
+                    div.innerHTML = `
+                        <h6 class="text-xs font-weight-bold mb-2">Cluster ${i}</h6>
+                        <div class="mb-2">
+                            <label class="form-label text-xs">Nama Cluster / Topik</label>
+                            <input type="text" name="nama_clusters[]" class="form-control border px-2 py-1 text-sm" value="Cluster ${i}" required>
+                        </div>
+                        <div class="mb-0">
+                            <label class="form-label text-xs">Centroid Awal</label>
+                            <select name="centroids[]" class="select-search-dynamic" required>
+                                ${optionsTemplate}
+                            </select>
+                        </div>
+                    `;
+                    container.appendChild(div);
+                    new TomSelect(div.querySelector('.select-search-dynamic'), {
+                        create: false,
+                        sortField: {
+                            field: "text",
+                            direction: "asc"
+                        }
+                    });
+                }
+            } else if (k < currentItems) {
+                // Remove items
+                let items = container.querySelectorAll('.centroid-item');
+                for (let i = currentItems - 1; i >= k; i--) {
+                    items[i].remove();
+                }
+            }
         });
     });
 </script>

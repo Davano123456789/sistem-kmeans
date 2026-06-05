@@ -21,17 +21,26 @@ class KMeansController extends Controller
     public function hitung(Request $request)
     {
         $request->validate([
-            'centroids' => 'required|array|size:4',
+            'jumlah_cluster' => 'required|integer|min:2|max:10',
+            'centroids' => 'required|array|size:' . $request->jumlah_cluster,
             'centroids.*' => 'required|exists:mahasiswa,id_mahasiswa',
+            'nama_clusters' => 'nullable|array',
         ]);
+
+        $k = $request->jumlah_cluster;
+        
+        $nama_clusters = [];
+        for ($i = 0; $i < $k; $i++) {
+            $nama_clusters[$i] = $request->nama_clusters[$i] ?? ('Cluster ' . ($i + 1));
+        }
 
         $features = ['a1', 'a2', 'a3', 'a4', 'b1', 'b2', 'b3', 'b4', 'd1', 'd2', 'd3', 'd4'];
         
         // 1. Ambil data semua mahasiswa yang punya nilai
         $allMahasiswa = Mahasiswa::with('nilaiKuesioner')->whereHas('nilaiKuesioner')->get();
         
-        if ($allMahasiswa->count() < 4) {
-            return back()->with('error', 'Data mahasiswa minimal harus 4 untuk proses clustering.');
+        if ($allMahasiswa->count() < $k) {
+            return back()->with('error', "Data mahasiswa minimal harus $k untuk proses clustering.");
         }
 
         // 2. Inisialisasi Centroid Awal dari pilihan user
@@ -48,7 +57,7 @@ class KMeansController extends Controller
         $converged = false;
 
         for ($iter = 1; $iter <= $maxIterations; $iter++) {
-            $clusters = [[], [], [], []];
+            $clusters = array_fill(0, $k, []);
             $iterResults = [];
 
             // Ambil info cluster dari iterasi sebelumnya jika ada
@@ -158,7 +167,7 @@ class KMeansController extends Controller
             // 📍 HITUNG CENTROID PCA & CONVEX HULL
             // =====================================
             $centroidsPca = [];
-            $clusterPoints = [[], [], [], []];
+            $clusterPoints = array_fill(0, $k, []);
 
             // Kumpulkan koordinat PC untuk tiap cluster
             foreach ($iterResults as $res) {
@@ -243,10 +252,12 @@ class KMeansController extends Controller
             $iterNum = $h['iterasi'];
             $exportData[$iterNum] = [
                 'centroids_pca' => $h['centroids_pca'],
-                'clusters' => []
+                'clusters' => [],
+                'nama_clusters' => $nama_clusters,
+                'k_jumlah' => $k
             ];
             
-            for ($c = 0; $c < 4; $c++) {
+            for ($c = 0; $c < $k; $c++) {
                 $exportData[$iterNum]['clusters'][$c] = [];
             }
 
@@ -268,7 +279,9 @@ class KMeansController extends Controller
             'mahasiswa' => $allMahasiswa,
             'history' => $history,
             'converged' => $converged,
-            'selectedCentroids' => $request->centroids
+            'selectedCentroids' => $request->centroids,
+            'k_jumlah' => $k,
+            'nama_clusters' => $nama_clusters
         ]);
     }
 
@@ -285,20 +298,16 @@ class KMeansController extends Controller
         $centroidsPca = $iterData['centroids_pca'];
         $clustersData = $iterData['clusters'];
         
-        $topics = [
-            'Application Developer',
-            'Data Analyst',
-            'System Analyst',
-            'IT Auditor & Governance'
-        ];
+        $k = $iterData['k_jumlah'] ?? 4;
+        $nama_clusters = $iterData['nama_clusters'] ?? [];
         
         $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
         $spreadsheet->removeSheetByIndex(0); // hapus sheet bawaan
         
-        for ($cIdx = 0; $cIdx < 4; $cIdx++) {
+        for ($cIdx = 0; $cIdx < $k; $cIdx++) {
             $members = $clustersData[$cIdx] ?? [];
             $centroidRow = $centroidsPca[$cIdx];
-            $topicName = $topics[$cIdx];
+            $topicName = $nama_clusters[$cIdx] ?? ('Cluster ' . ($cIdx + 1));
             
             $ws = $spreadsheet->createSheet();
             // Judul sheet maksimal 31 karakter
@@ -586,33 +595,34 @@ class KMeansController extends Controller
     public function simpan(Request $request)
     {
         $request->validate([
-            'centroids' => 'required|array|size:4',
+            'jumlah_cluster' => 'required|integer|min:2|max:10',
+            'centroids' => 'required|array|size:' . $request->jumlah_cluster,
             'centroids.*' => 'required|exists:mahasiswa,id_mahasiswa',
             'nama_riwayat' => 'required|string|max:255',
+            'nama_clusters' => 'nullable|array',
         ]);
+
+        $k = $request->jumlah_cluster;
+        
+        $nama_clusters = [];
+        for ($i = 0; $i < $k; $i++) {
+            $nama_clusters[$i] = $request->nama_clusters[$i] ?? ('Cluster ' . ($i + 1));
+        }
 
         $features = ['a1', 'a2', 'a3', 'a4', 'b1', 'b2', 'b3', 'b4', 'd1', 'd2', 'd3', 'd4'];
         
         // 1. Ambil data semua mahasiswa yang punya nilai
         $allMahasiswa = Mahasiswa::with('nilaiKuesioner')->whereHas('nilaiKuesioner')->get();
         
-        if ($allMahasiswa->count() < 4) {
-            return back()->with('error', 'Data mahasiswa minimal harus 4 untuk proses clustering.');
+        if ($allMahasiswa->count() < $k) {
+            return back()->with('error', "Data mahasiswa minimal harus $k untuk proses clustering.");
         }
 
-        // 2. Pastikan Centroid Standar ada di tabel `centroid`
-        $topics = [
-            'Application Developer',
-            'Data Analyst',
-            'System Analyst',
-            'IT Auditor & Governance'
-        ];
-        
         $dbCentroids = [];
-        for ($i = 0; $i < 4; $i++) {
+        for ($i = 0; $i < $k; $i++) {
             $dbCentroids[$i] = Centroid::firstOrCreate(
                 ['kode' => 'C' . ($i + 1)],
-                ['topik' => $topics[$i]]
+                ['topik' => $nama_clusters[$i]]
             );
         }
 
@@ -630,7 +640,7 @@ class KMeansController extends Controller
         $converged = false;
 
         for ($iter = 1; $iter <= $maxIterations; $iter++) {
-            $clusters = [[], [], [], []];
+            $clusters = array_fill(0, $k, []);
             $iterResults = [];
 
             // Ambil info cluster dari iterasi sebelumnya jika ada
@@ -729,7 +739,7 @@ class KMeansController extends Controller
             unset($res);
 
             $centroidsPca = [];
-            $clusterPoints = [[], [], [], []];
+            $clusterPoints = array_fill(0, $k, []);
 
             foreach ($iterResults as $res) {
                 $cIdx = $res['cluster'] - 1;
@@ -809,6 +819,8 @@ class KMeansController extends Controller
             'tanggal' => Carbon::now(),
             'jumlah_mahasiswa' => $allMahasiswa->count(),
             'iterasi_total' => $finalIteration['iterasi'],
+            'k_jumlah' => $k,
+            'nama_clusters' => $nama_clusters,
             'centroid_awal' => $request->centroids,
             'explained_variance_ratio' => $finalIteration['explained_variance_ratio']
         ]);
@@ -821,10 +833,7 @@ class KMeansController extends Controller
                 'id_riwayat' => $riwayat->id_riwayat,
                 'id_nilai' => $mhs->nilaiKuesioner->id_nilai,
                 'id_centroid' => $dbCentroids[$cIdx]->id_centroid,
-                'jarak_ke_c1' => $res['distances'][0],
-                'jarak_ke_c2' => $res['distances'][1],
-                'jarak_ke_c3' => $res['distances'][2],
-                'jarak_ke_c4' => $res['distances'][3],
+                'jarak_ke_centroids' => $res['distances'],
                 'jarak_minimum' => $res['min_distance'],
                 'pc1' => $res['PC1'],
                 'pc2' => $res['PC2'],
@@ -845,7 +854,8 @@ class KMeansController extends Controller
     {
         $riwayat = RiwayatClustering::with(['hasilClustering.nilaiKuesioner.mahasiswa', 'hasilClustering.centroid'])->findOrFail($id);
         
-        $topics = [
+        $k = $riwayat->k_jumlah ?? 4;
+        $nama_clusters = $riwayat->nama_clusters ?? [
             'Application Developer',
             'Data Analyst',
             'System Analyst',
@@ -853,24 +863,19 @@ class KMeansController extends Controller
         ];
 
         $results = [];
-        $clusters = [[], [], [], []];
-        $centroidsPca = [[], [], [], []];
+        $clusters = array_fill(0, $k, []);
+        $centroidsPca = array_fill(0, $k, []);
 
         foreach ($riwayat->hasilClustering as $hc) {
             $mhs = $hc->nilaiKuesioner->mahasiswa;
             $mhs->PC1 = $hc->pc1;
             $mhs->PC2 = $hc->pc2;
 
-            $cIdx = $hc->centroid->kode == 'C1' ? 0 : ($hc->centroid->kode == 'C2' ? 1 : ($hc->centroid->kode == 'C3' ? 2 : 3));
+            $cIdx = (int) substr($hc->centroid->kode, 1) - 1;
             
             $results[] = [
                 'mahasiswa' => $mhs,
-                'distances' => [
-                    $hc->jarak_ke_c1,
-                    $hc->jarak_ke_c2,
-                    $hc->jarak_ke_c3,
-                    $hc->jarak_ke_c4,
-                ],
+                'distances' => $hc->jarak_ke_centroids ?? [],
                 'min_distance' => $hc->jarak_minimum,
                 'cluster' => $cIdx + 1,
                 'moved' => false,
@@ -882,7 +887,7 @@ class KMeansController extends Controller
         }
 
         $hulls = [];
-        for ($c = 0; $c < 4; $c++) {
+        for ($c = 0; $c < $k; $c++) {
             $points = [];
             $sumPC1 = 0;
             $sumPC2 = 0;
@@ -921,26 +926,27 @@ class KMeansController extends Controller
             $selectedCentroidsNames[] = $mhsCentroid ? $mhsCentroid->nama : 'N/A';
         }
 
-        return view('kmeans.riwayat_show', compact('riwayat', 'results', 'clusters', 'centroidsPca', 'hulls', 'topics', 'selectedCentroidsNames'));
+        return view('kmeans.riwayat_show', compact('riwayat', 'results', 'clusters', 'centroidsPca', 'hulls', 'nama_clusters', 'selectedCentroidsNames', 'k'));
     }
 
     public function riwayatExport($id)
     {
         $riwayat = RiwayatClustering::with(['hasilClustering.nilaiKuesioner.mahasiswa', 'hasilClustering.centroid'])->findOrFail($id);
 
-        $topics = [
+        $k = $riwayat->k_jumlah ?? 4;
+        $nama_clusters = $riwayat->nama_clusters ?? [
             'Application Developer',
             'Data Analyst',
             'System Analyst',
             'IT Auditor & Governance'
         ];
 
-        $clustersData = [[], [], [], []];
+        $clustersData = array_fill(0, $k, []);
         $centroidsPca = [];
 
         foreach ($riwayat->hasilClustering as $hc) {
             $mhs = $hc->nilaiKuesioner->mahasiswa;
-            $cIdx = $hc->centroid->kode == 'C1' ? 0 : ($hc->centroid->kode == 'C2' ? 1 : ($hc->centroid->kode == 'C3' ? 2 : 3));
+            $cIdx = (int) substr($hc->centroid->kode, 1) - 1;
             
             $clustersData[$cIdx][] = [
                 'nama' => $mhs->nama,
@@ -949,7 +955,7 @@ class KMeansController extends Controller
             ];
         }
 
-        for ($c = 0; $c < 4; $c++) {
+        for ($c = 0; $c < $k; $c++) {
             $sumPC1 = 0;
             $sumPC2 = 0;
             $count = count($clustersData[$c]);
@@ -966,10 +972,10 @@ class KMeansController extends Controller
         $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
         $spreadsheet->removeSheetByIndex(0);
         
-        for ($cIdx = 0; $cIdx < 4; $cIdx++) {
+        for ($cIdx = 0; $cIdx < $k; $cIdx++) {
             $members = $clustersData[$cIdx] ?? [];
             $centroidRow = $centroidsPca[$cIdx];
-            $topicName = $topics[$cIdx];
+            $topicName = $nama_clusters[$cIdx] ?? ('Cluster ' . ($cIdx + 1));
             
             $ws = $spreadsheet->createSheet();
             $sheetTitle = substr(preg_replace('/[^A-Za-z0-9 ]/', '', $topicName), 0, 30);

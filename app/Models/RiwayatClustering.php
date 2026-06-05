@@ -17,6 +17,8 @@ class RiwayatClustering extends Model
         'tanggal',
         'jumlah_mahasiswa',
         'iterasi_total',
+        'k_jumlah',
+        'nama_clusters',
         'centroid_awal',
         'explained_variance_ratio',
     ];
@@ -24,6 +26,7 @@ class RiwayatClustering extends Model
     protected $casts = [
         'centroid_awal' => 'array',
         'explained_variance_ratio' => 'array',
+        'nama_clusters' => 'array',
         'tanggal' => 'datetime',
     ];
 

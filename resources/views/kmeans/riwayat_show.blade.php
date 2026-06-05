@@ -34,7 +34,7 @@
                             <table class="table table-bordered table-sm text-xs text-center mb-0">
                                 <thead class="bg-gray-100 font-weight-bold">
                                     <tr>
-                                        @foreach($topics as $index => $t)
+                                        @foreach($nama_clusters as $index => $t)
                                         <th>Centroid {{ $index+1 }} ({{ $t }})</th>
                                         @endforeach
                                     </tr>
@@ -126,8 +126,9 @@
                 @foreach($clusters as $cIdx => $members)
                 <div class="col-md-3 mb-3">
                     <div class="card shadow-none border h-100">
-                        <div class="card-header p-2 bg-gradient-{{ ['primary', 'info', 'success', 'warning'][$cIdx] }} text-white text-center">
-                            <h6 class="text-white mb-0 text-xs">{{ $topics[$cIdx] }}</h6>
+                        @php $colorClasses = ['primary', 'info', 'success', 'warning', 'danger', 'secondary', 'dark', 'light', 'primary', 'info']; @endphp
+                        <div class="card-header p-2 bg-gradient-{{ $colorClasses[$cIdx % 10] }} text-white text-center">
+                            <h6 class="text-white mb-0 text-xs">{{ $nama_clusters[$cIdx] ?? ('Cluster ' . ($cIdx + 1)) }}</h6>
                             <small class="text-xs">({{ count($members) }} Orang)</small>
                             <div class="text-xxs opacity-9 mt-1" style="font-size: 0.65rem;">
                                 Centroid PCA:<br>
@@ -180,7 +181,7 @@
                             <tr>
                                 <th class="text-center text-uppercase text-secondary font-weight-bolder opacity-7" style="width: 5%">No</th>
                                 <th class="text-uppercase text-secondary font-weight-bolder opacity-7">Mahasiswa</th>
-                                @foreach($topics as $t)
+                                @foreach($nama_clusters as $t)
                                 <th class="text-center text-uppercase text-secondary font-weight-bolder opacity-7" title="{{ $t }}">C{{ $loop->iteration }}</th>
                                 @endforeach
                                 <th class="text-center text-uppercase text-secondary font-weight-bolder opacity-7">Jarak Min</th>
@@ -201,7 +202,8 @@
                                 <td class="text-center text-secondary font-weight-bold">{{ number_format($res['PC1'], 3) }}</td>
                                 <td class="text-center text-secondary font-weight-bold">{{ number_format($res['PC2'], 3) }}</td>
                                 <td class="text-center">
-                                    <span class="badge badge-sm bg-gradient-{{ ['primary', 'info', 'success', 'warning'][$res['cluster']-1] }}">
+                                    @php $colorClasses = ['primary', 'info', 'success', 'warning', 'danger', 'secondary', 'dark', 'light', 'primary', 'info']; @endphp
+                                    <span class="badge badge-sm bg-gradient-{{ $colorClasses[($res['cluster']-1) % 10] }}">
                                         Cluster {{ $res['cluster'] }}
                                     </span>
                                 </td>
@@ -228,26 +230,34 @@
             'rgba(233, 30, 99, 1)',   // Primary
             'rgba(3, 169, 244, 1)',  // Info
             'rgba(76, 175, 80, 1)',   // Success
-            'rgba(251, 140, 0, 1)'   // Warning
+            'rgba(251, 140, 0, 1)',   // Warning
+            'rgba(244, 67, 54, 1)',   // Danger
+            'rgba(158, 158, 158, 1)', // Secondary
+            'rgba(52, 71, 103, 1)',   // Dark
+            'rgba(173, 181, 189, 1)', // Light
+            'rgba(233, 30, 99, 1)',
+            'rgba(3, 169, 244, 1)'
         ];
         const bgColors = [
             'rgba(233, 30, 99, 0.08)',
             'rgba(3, 169, 244, 0.08)',
             'rgba(76, 175, 80, 0.08)',
-            'rgba(251, 140, 0, 0.08)'
+            'rgba(251, 140, 0, 0.08)',
+            'rgba(244, 67, 54, 0.08)',
+            'rgba(158, 158, 158, 0.08)',
+            'rgba(52, 71, 103, 0.08)',
+            'rgba(173, 181, 189, 0.08)',
+            'rgba(233, 30, 99, 0.08)',
+            'rgba(3, 169, 244, 0.08)'
         ];
-        const topicNames = [
-            'Application Developer',
-            'Data Analyst',
-            'System Analyst',
-            'IT Auditor & Governance'
-        ];
+        const topicNames = {!! json_encode($nama_clusters ?? []) !!};
+        const k = {{ $k }};
 
         const ctx = document.getElementById('pcaHistoryChart').getContext('2d');
         const datasets = [];
 
         // 1. Group points by cluster
-        const clusterPoints = [[], [], [], []];
+        const clusterPoints = Array.from({length: k}, () => []);
         @foreach($results as $res)
             clusterPoints[{{ $res['cluster'] - 1 }}].push({
                 x: {{ $res['PC1'] }},
@@ -274,15 +284,16 @@
             @endforeach
         ];
 
-        for (let c = 0; c < 4; c++) {
+        for (let c = 0; c < k; c++) {
+            let colorIndex = c % 10;
             // A. Convex Hull boundary
             if (hulls[c] && hulls[c].length > 0) {
                 datasets.push({
                     type: 'line',
-                    label: 'Batas ' + topicNames[c],
+                    label: 'Batas ' + (topicNames[c] || 'Cluster ' + (c+1)),
                     data: hulls[c],
-                    borderColor: colors[c],
-                    backgroundColor: bgColors[c],
+                    borderColor: colors[colorIndex],
+                    backgroundColor: bgColors[colorIndex],
                     fill: true,
                     borderWidth: 2,
                     pointRadius: 0,
@@ -293,12 +304,12 @@
             }
 
             // B. Scatter Points of Students
-            if (clusterPoints[c].length > 0) {
+            if (clusterPoints[c] && clusterPoints[c].length > 0) {
                 datasets.push({
                     type: 'scatter',
-                    label: topicNames[c],
+                    label: 'Anggota ' + (topicNames[c] || 'Cluster ' + (c+1)),
                     data: clusterPoints[c],
-                    backgroundColor: colors[c],
+                    backgroundColor: colors[colorIndex],
                     borderColor: '#ffffff',
                     borderWidth: 1.5,
                     pointRadius: 6,
@@ -320,10 +331,10 @@
             if (centroids[c] && (centroids[c].x !== 0 || centroids[c].y !== 0)) {
                 datasets.push({
                     type: 'scatter',
-                    label: 'Centroid ' + topicNames[c],
+                    label: 'Centroid ' + (c + 1),
                     data: [centroids[c]],
-                    backgroundColor: 'rgba(0, 0, 0, 0.12)',
-                    borderColor: '#000000',
+                    backgroundColor: '#1a1a1a',
+                    borderColor: colors[colorIndex],
                     borderWidth: 2,
                     pointStyle: 'rect',
                     pointRadius: 16,

@@ -16,14 +16,15 @@ class HasilClustering extends Model
         'id_riwayat',
         'id_nilai',
         'id_centroid',
-        'jarak_ke_c1',
-        'jarak_ke_c2',
-        'jarak_ke_c3',
-        'jarak_ke_c4',
+        'jarak_ke_centroids',
         'jarak_minimum',
         'pc1',
         'pc2',
         'iterasi',
+    ];
+
+    protected $casts = [
+        'jarak_ke_centroids' => 'array',
     ];
 
     public function riwayatClustering()
