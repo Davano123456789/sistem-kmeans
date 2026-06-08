@@ -232,6 +232,7 @@
                                         data-pc1="{{ number_format($res['PC1'], 3) }}"
                                         data-pc2="{{ number_format($res['PC2'], 3) }}"
                                         data-centroids="{{ json_encode($finalCentroids) }}"
+                                        data-pca-params="{{ json_encode($pcaParameters) }}"
                                         title="Lihat Detail Perhitungan">
                                         <i class="material-icons text-md">calculate</i>
                                     </button>
@@ -281,8 +282,37 @@
 
                 <!-- Section 2: Jarak Euclidean -->
                 <h6 class="font-weight-bold text-dark border-bottom pb-1 mt-4"><i class="material-icons text-sm align-middle me-1">square_foot</i> 2. Perhitungan Jarak Euclidean (12 Dimensi)</h6>
-                <p class="text-xs text-secondary mb-3">Rumus Jarak Euclidean ke Centroid: $\text{Jarak} = \sqrt{\sum (X_{\text{Mhs}} - Centroid)^2}$</p>
-                <div id="detail-euclidean-steps">
+                <p class="text-xs text-secondary mb-3">Rumus Jarak Euclidean ke Centroid: <strong>Jarak = &radic;&Sigma; (X<sub>Mhs</sub> - Centroid)&sup2;</strong></p>
+                <div id="detail-euclidean-steps" class="mb-4">
+                    <!-- Populated by JS -->
+                </div>
+
+                <!-- Section 3: Proyeksi PCA -->
+                <h6 class="font-weight-bold text-dark border-bottom pb-1 mt-4"><i class="material-icons text-sm align-middle me-1">insights</i> 3. Perhitungan Proyeksi PCA (Reduksi Dimensi)</h6>
+                <p class="text-xs text-secondary mb-2">
+                    Proses PCA mereduksi data kuesioner dari dimensi tinggi ke 2 dimensi (PC1 & PC2) menggunakan standardisasi <strong>Z = (X - &mu;) / &sigma;</strong> dan perkalian dengan Eigenvector (Loadings).
+                </p>
+                <div class="table-responsive mb-3">
+                    <table class="table table-bordered table-sm text-center text-xs align-middle">
+                        <thead class="bg-gray-100">
+                            <tr>
+                                <th>Variabel</th>
+                                <th title="Nilai jawaban kuesioner asli mahasiswa" style="text-decoration: underline dotted; cursor: help;">Nilai (X)</th>
+                                <th title="Rata-rata nilai variabel ini dari seluruh mahasiswa" style="text-decoration: underline dotted; cursor: help;">Mean (&mu;)</th>
+                                <th title="Deviasi Standar (standar penyimpangan) nilai variabel ini dari seluruh mahasiswa" style="text-decoration: underline dotted; cursor: help;">Std Dev (&sigma;)</th>
+                                <th title="Nilai Z-score (terstandarisasi). Rumus: Z = (Nilai - Mean) / Std Dev" style="text-decoration: underline dotted; cursor: help;">Standar (Z)</th>
+                                <th title="Bobot pengaruh variabel ini terhadap sumbu utama PC1 (diperoleh dari Eigenvector ke-1)" style="text-decoration: underline dotted; cursor: help;">Loading PC1 (V<sub>1</sub>)</th>
+                                <th title="Kontribusi variabel ini terhadap koordinat PC1. Rumus: Z * Loading PC1" style="text-decoration: underline dotted; cursor: help;">Z &times; V<sub>1</sub></th>
+                                <th title="Bobot pengaruh variabel ini terhadap sumbu utama PC2 (diperoleh dari Eigenvector ke-2)" style="text-decoration: underline dotted; cursor: help;">Loading PC2 (V<sub>2</sub>)</th>
+                                <th title="Kontribusi variabel ini terhadap koordinat PC2. Rumus: Z * Loading PC2" style="text-decoration: underline dotted; cursor: help;">Z &times; V<sub>2</sub></th>
+                            </tr>
+                        </thead>
+                        <tbody id="detail-table-pca-steps">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+                <div id="detail-pca-summary" class="bg-gray-50 border p-3 border-radius-md text-xs text-dark mt-2">
                     <!-- Populated by JS -->
                 </div>
             </div>
@@ -488,6 +518,201 @@
                     }
                 }
             }
+        });
+
+        // Setup detail modal listener
+        document.querySelectorAll('.btn-detail-hitung').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const nama = this.getAttribute('data-nama');
+                const kuesioner = JSON.parse(this.getAttribute('data-kuesioner'));
+                const distances = JSON.parse(this.getAttribute('data-distances'));
+                const cluster = parseInt(this.getAttribute('data-cluster'));
+                const pc1 = this.getAttribute('data-pc1');
+                const pc2 = this.getAttribute('data-pc2');
+                const centroids = JSON.parse(this.getAttribute('data-centroids'));
+                
+                // Get topic names
+                const topicsList = {!! json_encode($nama_clusters ?? $topics ?? []) !!};
+
+                document.getElementById('detail-nama-mhs').innerText = nama;
+                document.getElementById('detail-summary-cluster').innerHTML = `
+                    <span class="badge bg-gradient-info text-white">Cluster ${cluster} (${topicsList[cluster-1] || 'Cluster ' + cluster})</span>
+                    <span class="badge bg-gradient-secondary text-white ms-1">PC1: ${pc1}</span>
+                    <span class="badge bg-gradient-secondary text-white ms-1">PC2: ${pc2}</span>
+                `;
+
+                // Render Nilai Kuesioner
+                const tbodyKuesioner = document.getElementById('detail-table-kuesioner');
+                tbodyKuesioner.innerHTML = `
+                    <tr>
+                        <td class="font-weight-bold text-start">Minat (A)</td>
+                        <td>A1 = ${kuesioner.a1 ?? 0}</td>
+                        <td>A2 = ${kuesioner.a2 ?? 0}</td>
+                        <td>A3 = ${kuesioner.a3 ?? 0}</td>
+                        <td>A4 = ${kuesioner.a4 ?? 0}</td>
+                    </tr>
+                    <tr>
+                        <td class="font-weight-bold text-start">Keterampilan (B)</td>
+                        <td>B1 = ${kuesioner.b1 ?? 0}</td>
+                        <td>B3 = ${kuesioner.b3 ?? 0} <small class="text-secondary">(Data Analyst)</small></td>
+                        <td>B4 = ${kuesioner.b4 ?? 0} <small class="text-secondary">(System Analyst)</small></td>
+                        <td>B2 = ${kuesioner.b2 ?? 0} <small class="text-secondary">(IT Auditor)</small></td>
+                    </tr>
+                    <tr>
+                        <td class="font-weight-bold text-start">Nilai Akademik (D)</td>
+                        <td>D3 = ${kuesioner.d3 ?? 0} <small class="text-secondary">(App Dev)</small></td>
+                        <td>D1 = ${kuesioner.d1 ?? 0} <small class="text-secondary">(Data Analyst)</small></td>
+                        <td>D2 = ${kuesioner.d2 ?? 0} <small class="text-secondary">(System Analyst)</small></td>
+                        <td>D4 = ${kuesioner.d4 ?? 0} <small class="text-secondary">(IT Auditor)</small></td>
+                    </tr>
+                `;
+
+                // Render Euclidean distance calculation steps
+                const euclideanContainer = document.getElementById('detail-euclidean-steps');
+                euclideanContainer.innerHTML = '';
+
+                // Features map to display calculation per role
+                const rolesMap = [
+                    { name: "Application Developer", features: [{f: 'a1', label: 'a1 (Minat)'}, {f: 'b1', label: 'b1 (Skill)'}, {f: 'd3', label: 'd3 (Nilai)'}] },
+                    { name: "Data Analyst", features: [{f: 'a2', label: 'a2 (Minat)'}, {f: 'b3', label: 'b3 (Skill)'}, {f: 'd1', label: 'd1 (Nilai)'}] },
+                    { name: "System Analyst", features: [{f: 'a3', label: 'a3 (Minat)'}, {f: 'b4', label: 'b4 (Skill)'}, {f: 'd2', label: 'd2 (Nilai)'}] },
+                    { name: "IT Auditor & Governance", features: [{f: 'a4', label: 'a4 (Minat)'}, {f: 'b2', label: 'b2 (Skill)'}, {f: 'd4', label: 'd4 (Nilai)'}] }
+                ];
+
+                centroids.forEach((centroid, cIdx) => {
+                    const cNum = cIdx + 1;
+                    const isMin = cNum === cluster;
+                    const distanceValue = distances[cIdx] !== undefined ? parseFloat(distances[cIdx]).toFixed(4) : 'N/A';
+                    
+                    let html = `
+                        <div class="card shadow-none border mb-3 p-3" ${isMin ? 'style="background-color: rgba(76, 175, 80, 0.05); border-color: #4caf50 !important;"' : ''}>
+                            <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-2">
+                                <h6 class="text-xs font-weight-bold mb-0 text-dark">
+                                    Ke Centroid ${cNum} (${topicsList[cIdx] || 'Cluster ' + cNum})
+                                </h6>
+                                <span class="badge ${isMin ? 'bg-success' : 'bg-secondary'} text-white text-xxs">
+                                    Jarak: ${distanceValue} ${isMin ? '(TERKECIL - CLUSTER TERPILIH)' : ''}
+                                </span>
+                            </div>
+                            <div class="row text-xxs">
+                    `;
+
+                    let sumSq = 0;
+                    rolesMap.forEach(role => {
+                        html += `<div class="col-md-3"><strong>Topik ${role.name}:</strong><br>`;
+                        role.features.forEach(item => {
+                            const val = kuesioner[item.f] !== undefined ? kuesioner[item.f] : 0;
+                            const cVal = centroid[item.f] !== undefined ? parseFloat(centroid[item.f]) : 0;
+                            const diff = val - cVal;
+                            const diffSq = diff * diff;
+                            sumSq += diffSq;
+                            
+                            html += `&bull; ${item.label}: (${val} - ${cVal.toFixed(3)})&sup2; = ${diffSq.toFixed(4)}<br>`;
+                        });
+                        html += `</div>`;
+                    });
+
+                    html += `
+                            </div>
+                            <div class="border-top pt-2 mt-2 text-xxs font-weight-bold text-dark d-flex justify-content-between">
+                                <span>Jumlah Kuadrat Selisih (Sum of Squares): ${sumSq.toFixed(4)}</span>
+                                <span>Akar Kuadrat (Jarak Euclidean): &radic;${sumSq.toFixed(4)} = ${Math.sqrt(sumSq).toFixed(4)}</span>
+                            </div>
+                        </div>
+                    `;
+
+                    euclideanContainer.innerHTML += html;
+                });
+
+                // Render PCA steps
+                const tbodyPca = document.getElementById('detail-table-pca-steps');
+                tbodyPca.innerHTML = '';
+
+                const pcaParams = JSON.parse(this.getAttribute('data-pca-params'));
+                if (pcaParams) {
+                    const featuresList = pcaParams.features;
+                    const means = pcaParams.means;
+                    const stds = pcaParams.stds;
+                    const v1 = pcaParams.v1;
+                    const v2 = pcaParams.v2;
+                    const flipPC1 = pcaParams.flipPC1;
+
+                    const featureLabels = {
+                        'a1': 'a1 (Minat - App Dev)',
+                        'a2': 'a2 (Minat - Data Analyst)',
+                        'a3': 'a3 (Minat - System Analyst)',
+                        'a4': 'a4 (Minat - IT Auditor & Gov)',
+                        'b1': 'b1 (Skill - App Dev)',
+                        'b2': 'b2 (Skill - IT Auditor & Gov)',
+                        'b3': 'b3 (Skill - Data Analyst)',
+                        'b4': 'b4 (Skill - System Analyst)',
+                        'd1': 'd1 (Nilai - Data Analyst)',
+                        'd2': 'd2 (Nilai - System Analyst)',
+                        'd3': 'd3 (Nilai - App Dev)',
+                        'd4': 'd4 (Nilai - IT Auditor & Gov)'
+                    };
+
+                    let sumPC1Contribution = 0;
+                    let sumPC2Contribution = 0;
+
+                    featuresList.forEach((f, index) => {
+                        const val = kuesioner[f] !== undefined ? kuesioner[f] : 0;
+                        const mean = means[index] !== undefined ? parseFloat(means[index]) : 0;
+                        const std = stds[index] !== undefined ? parseFloat(stds[index]) : 1;
+                        const z = (val - mean) / std;
+                        const loading1 = v1[index] !== undefined ? parseFloat(v1[index]) : 0;
+                        const loading2 = v2[index] !== undefined ? parseFloat(v2[index]) : 0;
+                        const cont1 = z * loading1;
+                        const cont2 = z * loading2;
+
+                        sumPC1Contribution += cont1;
+                        sumPC2Contribution += cont2;
+
+                        tbodyPca.innerHTML += `
+                            <tr>
+                                <td class="text-start font-weight-bold">${featureLabels[f] || f}</td>
+                                <td>${val}</td>
+                                <td>${mean.toFixed(3)}</td>
+                                <td>${std.toFixed(3)}</td>
+                                <td>${z.toFixed(3)}</td>
+                                <td>${loading1.toFixed(3)}</td>
+                                <td class="font-weight-bold text-primary">${cont1.toFixed(4)}</td>
+                                <td>${loading2.toFixed(3)}</td>
+                                <td class="font-weight-bold text-success">${cont2.toFixed(4)}</td>
+                            </tr>
+                        `;
+                    });
+
+                    const finalPC1 = sumPC1Contribution * flipPC1;
+
+                    document.getElementById('detail-pca-summary').innerHTML = `
+                        <div class="row">
+                            <div class="col-md-6 border-end">
+                                <h6 class="text-xs font-weight-bold text-primary mb-1">Perhitungan Sumbu PC1 (Horizontal)</h6>
+                                <div>&bull; Total Kontribusi PC1 (Raw): <strong>${sumPC1Contribution.toFixed(4)}</strong></div>
+                                <div>&bull; Sumbu Flip PC1 Factor: <strong>${flipPC1}</strong></div>
+                                <div class="mt-1 text-xs">
+                                    <strong>Hasil Akhir PC1:</strong> ${sumPC1Contribution.toFixed(4)} &times; (${flipPC1}) = <span class="badge bg-primary text-white font-weight-bold" style="font-size: 0.8rem;">${finalPC1.toFixed(3)}</span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="text-xs font-weight-bold text-success mb-1">Perhitungan Sumbu PC2 (Vertikal)</h6>
+                                <div>&bull; Total Kontribusi PC2: <strong>${sumPC2Contribution.toFixed(4)}</strong></div>
+                                <div class="mt-2 text-xs">
+                                    <strong>Hasil Akhir PC2:</strong> <span class="badge bg-success text-white font-weight-bold" style="font-size: 0.8rem;">${sumPC2Contribution.toFixed(3)}</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    tbodyPca.innerHTML = '<tr><td colspan="9" class="text-center text-secondary">Data PCA tidak tersedia</td></tr>';
+                    document.getElementById('detail-pca-summary').innerHTML = '';
+                }
+
+                // Show modal
+                const myModal = new bootstrap.Modal(document.getElementById('modalDetailPerhitungan'));
+                myModal.show();
+            });
         });
     });
 </script>

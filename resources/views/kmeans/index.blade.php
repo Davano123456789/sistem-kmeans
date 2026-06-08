@@ -256,6 +256,7 @@
                                                  data-pc1="{{ number_format($res['PC1'], 3) }}"
                                                  data-pc2="{{ number_format($res['PC2'], 3) }}"
                                                  data-centroids="{{ json_encode($h['centroids']) }}"
+                                                 data-pca-params="{{ json_encode($h['pca_parameters']) }}"
                                                  title="Lihat Detail Perhitungan">
                                                  <i class="material-icons text-md">calculate</i>
                                              </button>
@@ -426,8 +427,37 @@
 
                 <!-- Section 2: Jarak Euclidean -->
                 <h6 class="font-weight-bold text-dark border-bottom pb-1 mt-4"><i class="material-icons text-sm align-middle me-1">square_foot</i> 2. Perhitungan Jarak Euclidean (12 Dimensi)</h6>
-                <p class="text-xs text-secondary mb-3">Rumus Jarak Euclidean ke Centroid: $\text{Jarak} = \sqrt{\sum (X_{\text{Mhs}} - Centroid)^2}$</p>
-                <div id="detail-euclidean-steps">
+                <p class="text-xs text-secondary mb-3">Rumus Jarak Euclidean ke Centroid: <strong>Jarak = &radic;&Sigma; (X<sub>Mhs</sub> - Centroid)&sup2;</strong></p>
+                <div id="detail-euclidean-steps" class="mb-4">
+                    <!-- Populated by JS -->
+                </div>
+
+                <!-- Section 3: Proyeksi PCA -->
+                <h6 class="font-weight-bold text-dark border-bottom pb-1 mt-4"><i class="material-icons text-sm align-middle me-1">insights</i> 3. Perhitungan Proyeksi PCA (Reduksi Dimensi)</h6>
+                <p class="text-xs text-secondary mb-2">
+                    Proses PCA mereduksi data kuesioner dari dimensi tinggi ke 2 dimensi (PC1 & PC2) menggunakan standardisasi <strong>Z = (X - &mu;) / &sigma;</strong> dan perkalian dengan Eigenvector (Loadings).
+                </p>
+                <div class="table-responsive mb-3">
+                    <table class="table table-bordered table-sm text-center text-xs align-middle">
+                        <thead class="bg-gray-100">
+                            <tr>
+                                <th>Variabel</th>
+                                <th title="Nilai jawaban kuesioner asli mahasiswa" style="text-decoration: underline dotted; cursor: help;">Nilai (X)</th>
+                                <th title="Rata-rata nilai variabel ini dari seluruh mahasiswa" style="text-decoration: underline dotted; cursor: help;">Mean (&mu;)</th>
+                                <th title="Deviasi Standar (standar penyimpangan) nilai variabel ini dari seluruh mahasiswa" style="text-decoration: underline dotted; cursor: help;">Std Dev (&sigma;)</th>
+                                <th title="Nilai Z-score (terstandarisasi). Rumus: Z = (Nilai - Mean) / Std Dev" style="text-decoration: underline dotted; cursor: help;">Standar (Z)</th>
+                                <th title="Bobot pengaruh variabel ini terhadap sumbu utama PC1 (diperoleh dari Eigenvector ke-1)" style="text-decoration: underline dotted; cursor: help;">Loading PC1 (V<sub>1</sub>)</th>
+                                <th title="Kontribusi variabel ini terhadap koordinat PC1. Rumus: Z * Loading PC1" style="text-decoration: underline dotted; cursor: help;">Z &times; V<sub>1</sub></th>
+                                <th title="Bobot pengaruh variabel ini terhadap sumbu utama PC2 (diperoleh dari Eigenvector ke-2)" style="text-decoration: underline dotted; cursor: help;">Loading PC2 (V<sub>2</sub>)</th>
+                                <th title="Kontribusi variabel ini terhadap koordinat PC2. Rumus: Z * Loading PC2" style="text-decoration: underline dotted; cursor: help;">Z &times; V<sub>2</sub></th>
+                            </tr>
+                        </thead>
+                        <tbody id="detail-table-pca-steps">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+                <div id="detail-pca-summary" class="bg-gray-50 border p-3 border-radius-md text-xs text-dark mt-2">
                     <!-- Populated by JS -->
                 </div>
             </div>
@@ -747,6 +777,91 @@
 
                     euclideanContainer.innerHTML += html;
                 });
+
+                // Render PCA steps
+                const tbodyPca = document.getElementById('detail-table-pca-steps');
+                tbodyPca.innerHTML = '';
+
+                const pcaParams = JSON.parse(this.getAttribute('data-pca-params'));
+                if (pcaParams) {
+                    const featuresList = pcaParams.features;
+                    const means = pcaParams.means;
+                    const stds = pcaParams.stds;
+                    const v1 = pcaParams.v1;
+                    const v2 = pcaParams.v2;
+                    const flipPC1 = pcaParams.flipPC1;
+
+                    const featureLabels = {
+                        'a1': 'a1 (Minat - App Dev)',
+                        'a2': 'a2 (Minat - Data Analyst)',
+                        'a3': 'a3 (Minat - System Analyst)',
+                        'a4': 'a4 (Minat - IT Auditor & Gov)',
+                        'b1': 'b1 (Skill - App Dev)',
+                        'b2': 'b2 (Skill - IT Auditor & Gov)',
+                        'b3': 'b3 (Skill - Data Analyst)',
+                        'b4': 'b4 (Skill - System Analyst)',
+                        'd1': 'd1 (Nilai - Data Analyst)',
+                        'd2': 'd2 (Nilai - System Analyst)',
+                        'd3': 'd3 (Nilai - App Dev)',
+                        'd4': 'd4 (Nilai - IT Auditor & Gov)'
+                    };
+
+                    let sumPC1Contribution = 0;
+                    let sumPC2Contribution = 0;
+
+                    featuresList.forEach((f, index) => {
+                        const val = kuesioner[f] !== undefined ? kuesioner[f] : 0;
+                        const mean = means[index] !== undefined ? parseFloat(means[index]) : 0;
+                        const std = stds[index] !== undefined ? parseFloat(stds[index]) : 1;
+                        const z = (val - mean) / std;
+                        const loading1 = v1[index] !== undefined ? parseFloat(v1[index]) : 0;
+                        const loading2 = v2[index] !== undefined ? parseFloat(v2[index]) : 0;
+                        const cont1 = z * loading1;
+                        const cont2 = z * loading2;
+
+                        sumPC1Contribution += cont1;
+                        sumPC2Contribution += cont2;
+
+                        tbodyPca.innerHTML += `
+                            <tr>
+                                <td class="text-start font-weight-bold">${featureLabels[f] || f}</td>
+                                <td>${val}</td>
+                                <td>${mean.toFixed(3)}</td>
+                                <td>${std.toFixed(3)}</td>
+                                <td>${z.toFixed(3)}</td>
+                                <td>${loading1.toFixed(3)}</td>
+                                <td class="font-weight-bold text-primary">${cont1.toFixed(4)}</td>
+                                <td>${loading2.toFixed(3)}</td>
+                                <td class="font-weight-bold text-success">${cont2.toFixed(4)}</td>
+                            </tr>
+                        `;
+                    });
+
+                    const finalPC1 = sumPC1Contribution * flipPC1;
+
+                    document.getElementById('detail-pca-summary').innerHTML = `
+                        <div class="row">
+                            <div class="col-md-6 border-end">
+                                <h6 class="text-xs font-weight-bold text-primary mb-1">Perhitungan Sumbu PC1 (Horizontal)</h6>
+                                <div>&bull; Total Kontribusi PC1 (Raw): <strong>${sumPC1Contribution.toFixed(4)}</strong></div>
+                                <div>&bull; Sumbu Flip PC1 Factor: <strong>${flipPC1}</strong></div>
+                                <div class="mt-1 text-xs">
+                                    <strong>Hasil Akhir PC1:</strong> ${sumPC1Contribution.toFixed(4)} &times; (${flipPC1}) = <span class="badge bg-primary text-white font-weight-bold" style="font-size: 0.8rem;">${finalPC1.toFixed(3)}</span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="text-xs font-weight-bold text-success mb-1">Perhitungan Sumbu PC2 (Vertikal)</h6>
+                                <div>&bull; Total Kontribusi PC2: <strong>${sumPC2Contribution.toFixed(4)}</strong></div>
+                                <div class="mt-2 text-xs">
+                                    <strong>Hasil Akhir PC2:</strong> <span class="badge bg-success text-white font-weight-bold" style="font-size: 0.8rem;">${sumPC2Contribution.toFixed(3)}</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    tbodyPca.innerHTML = '<tr><td colspan="9" class="text-center text-secondary">Data PCA tidak tersedia</td></tr>';
+                    document.getElementById('detail-pca-summary').innerHTML = '';
+                }
 
                 // Show modal
                 const myModal = new bootstrap.Modal(document.getElementById('modalDetailPerhitungan'));

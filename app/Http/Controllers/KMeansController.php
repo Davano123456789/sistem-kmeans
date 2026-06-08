@@ -241,7 +241,15 @@ class KMeansController extends Controller
                 'clusters' => $clusters,
                 'centroids_pca' => $centroidsPca,
                 'hulls' => $hulls,
-                'explained_variance_ratio' => $pcaResult['explained_variance_ratio']
+                'explained_variance_ratio' => $pcaResult['explained_variance_ratio'],
+                'pca_parameters' => [
+                    'means' => $pcaResult['means'] ?? [],
+                    'stds' => $pcaResult['stds'] ?? [],
+                    'v1' => $pcaResult['v1'] ?? [],
+                    'v2' => $pcaResult['v2'] ?? [],
+                    'flipPC1' => $flipPC1,
+                    'features' => $features
+                ]
             ];
 
             // 4. Hitung Centroid Baru
@@ -561,7 +569,11 @@ class KMeansController extends Controller
             'explained_variance_ratio' => [
                 $totalVar > 0 ? $val1 / $totalVar : 0.0,
                 $totalVar > 0 ? $val2 / $totalVar : 0.0
-            ]
+            ],
+            'means' => $means,
+            'stds' => $stds,
+            'v1' => $v1,
+            'v2' => $v2,
         ];
     }
 
@@ -993,7 +1005,75 @@ class KMeansController extends Controller
             $selectedCentroidsNames[] = $mhsCentroid ? $mhsCentroid->nama : 'N/A';
         }
 
-        return view('kmeans.riwayat_show', compact('riwayat', 'results', 'clusters', 'centroidsPca', 'hulls', 'nama_clusters', 'selectedCentroidsNames', 'k', 'finalCentroids'));
+        // Hitung PCA parameters secara dynamic on-the-fly untuk modal detail
+        $activeIndices = [];
+        foreach ($nama_clusters as $topicName) {
+            $nameLower = strtolower(trim($topicName));
+            if (str_contains($nameLower, 'pemrograman') || str_contains($nameLower, 'developer') || str_contains($nameLower, 'application') || str_contains($nameLower, 'app')) {
+                $activeIndices[] = 1;
+            } elseif (str_contains($nameLower, 'system') || str_contains($nameLower, 'sistem')) {
+                $activeIndices[] = 3;
+            } elseif (str_contains($nameLower, 'data') || str_contains($nameLower, 'analyst')) {
+                $activeIndices[] = 2;
+            } elseif (str_contains($nameLower, 'manajemen') || str_contains($nameLower, 'auditor') || str_contains($nameLower, 'governance') || str_contains($nameLower, 'audit')) {
+                $activeIndices[] = 4;
+            }
+        }
+        $activeIndices = array_unique($activeIndices);
+        if (empty($activeIndices)) {
+            $activeIndices = [1, 2, 3, 4];
+        }
+        $featuresMap = [
+            1 => ['a1', 'b1', 'd3'], // App Dev
+            2 => ['a2', 'b3', 'd1'], // Data Analyst
+            3 => ['a3', 'b4', 'd2'], // System Analyst
+            4 => ['a4', 'b2', 'd4'], // IT Auditor & Governance
+        ];
+        $pcaFeatures = [];
+        foreach ($activeIndices as $idx) {
+            if (isset($featuresMap[$idx])) {
+                $pcaFeatures = array_merge($pcaFeatures, $featuresMap[$idx]);
+            }
+        }
+        sort($pcaFeatures);
+
+        $pcaInput = [];
+        foreach ($results as $res) {
+            $mhs = $res['mahasiswa'];
+            $row = [];
+            foreach ($pcaFeatures as $feature) {
+                $row[] = $mhs->nilaiKuesioner->$feature ?? 0;
+            }
+            $pcaInput[] = $row;
+        }
+
+        $pcaResult = $this->calculatePCA($pcaInput);
+        $projection = $pcaResult['projection'];
+
+        $sumPC1_C1 = 0.0;
+        $countC1 = 0;
+        foreach ($results as $idx => $res) {
+            if ($res['cluster'] === 1) {
+                $sumPC1_C1 += $projection[$idx]['PC1'];
+                $countC1++;
+            }
+        }
+        $flipPC1 = 1.0;
+        if ($countC1 > 0) {
+            $meanPC1_C1 = $sumPC1_C1 / $countC1;
+            if ($meanPC1_C1 < 0.0) $flipPC1 = -1.0;
+        }
+
+        $pcaParameters = [
+            'means' => $pcaResult['means'] ?? [],
+            'stds' => $pcaResult['stds'] ?? [],
+            'v1' => $pcaResult['v1'] ?? [],
+            'v2' => $pcaResult['v2'] ?? [],
+            'flipPC1' => $flipPC1,
+            'features' => $pcaFeatures
+        ];
+
+        return view('kmeans.riwayat_show', compact('riwayat', 'results', 'clusters', 'centroidsPca', 'hulls', 'nama_clusters', 'selectedCentroidsNames', 'k', 'finalCentroids', 'pcaParameters'));
     }
 
     public function riwayatExport($id)
