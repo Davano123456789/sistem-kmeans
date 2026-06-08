@@ -58,7 +58,7 @@ class MahasiswaImport implements ToCollection
         // Default indices untuk kuesioner (A1-A4, B1-B4, D1-D4) sesuai format standar
         $a1Idx = 5; $a2Idx = 6; $a3Idx = 7; $a4Idx = 8;
         $b1Idx = 9; $b2Idx = 10; $b3Idx = 11; $b4Idx = 12;
-        $d1Idx = 16; $d2Idx = 14; $d3Idx = 15; $d4Idx = 17;
+        $d1Idx = 14; $d2Idx = 15; $d3Idx = 16; $d4Idx = 17;
 
         foreach ($header as $idx => $col) {
             if ($col === null || $col === '') continue;
@@ -77,42 +77,54 @@ class MahasiswaImport implements ToCollection
             }
 
             // Pemetaan kuesioner dinamis berdasarkan kata kunci/deskripsi lengkap atau nama langsung (a1, a2, dll.)
-            if ($colLower === 'a1' || (strpos($colLower, 'berminat') !== false && strpos($colLower, 'pemrograman') !== false)) {
+            // A1: App Dev
+            if ($colLower === 'a1' || (strpos($colLower, 'berminat') !== false && (strpos($colLower, 'pemrograman') !== false || strpos($colLower, 'app dev') !== false || strpos($colLower, 'application developer') !== false))) {
                 $a1Idx = $idx;
             }
-            if ($colLower === 'a2' || (strpos($colLower, 'berminat') !== false && strpos($colLower, 'analisis data') !== false)) {
+            // A2: Data Analyst
+            if ($colLower === 'a2' || (strpos($colLower, 'berminat') !== false && (strpos($colLower, 'analisis data') !== false || strpos($colLower, 'data analyst') !== false))) {
                 $a2Idx = $idx;
             }
-            if ($colLower === 'a3' || (strpos($colLower, 'berminat') !== false && (strpos($colLower, 'analisis sistem') !== false || strpos($colLower, 'analisis system') !== false))) {
+            // A3: System Analyst
+            if ($colLower === 'a3' || (strpos($colLower, 'berminat') !== false && (strpos($colLower, 'analisis sistem') !== false || strpos($colLower, 'analisis system') !== false || strpos($colLower, 'system analyst') !== false))) {
                 $a3Idx = $idx;
             }
-            if ($colLower === 'a4' || (strpos($colLower, 'berminat') !== false && strpos($colLower, 'manajemen it') !== false)) {
+            // A4: IT Auditor & Governance
+            if ($colLower === 'a4' || (strpos($colLower, 'berminat') !== false && (strpos($colLower, 'manajemen it') !== false || strpos($colLower, 'it auditor') !== false || strpos($colLower, 'governance') !== false || strpos($colLower, 'tata kelola') !== false))) {
                 $a4Idx = $idx;
             }
             
-            if ($colLower === 'b1' || (strpos($colLower, 'keterampilan') !== false && strpos($colLower, 'pemrograman') !== false)) {
+            // B1: App Dev
+            if ($colLower === 'b1' || (strpos($colLower, 'keterampilan') !== false && (strpos($colLower, 'pemrograman') !== false || strpos($colLower, 'app dev') !== false || strpos($colLower, 'application developer') !== false))) {
                 $b1Idx = $idx;
             }
-            if ($colLower === 'b2' || (strpos($colLower, 'keterampilan') !== false && strpos($colLower, 'manajemen it') !== false)) {
+            // B2: IT Auditor & Governance
+            if ($colLower === 'b2' || (strpos($colLower, 'keterampilan') !== false && (strpos($colLower, 'manajemen it') !== false || strpos($colLower, 'it auditor') !== false || strpos($colLower, 'governance') !== false || strpos($colLower, 'tata kelola') !== false))) {
                 $b2Idx = $idx;
             }
-            if ($colLower === 'b3' || (strpos($colLower, 'keterampilan') !== false && strpos($colLower, 'analisis data') !== false)) {
+            // B3: Data Analyst
+            if ($colLower === 'b3' || (strpos($colLower, 'keterampilan') !== false && (strpos($colLower, 'analisis data') !== false || strpos($colLower, 'data analyst') !== false))) {
                 $b3Idx = $idx;
             }
-            if ($colLower === 'b4' || (strpos($colLower, 'keterampilan') !== false && (strpos($colLower, 'analisis sistem') !== false || strpos($colLower, 'analisis system') !== false))) {
+            // B4: System Analyst
+            if ($colLower === 'b4' || (strpos($colLower, 'keterampilan') !== false && (strpos($colLower, 'analisis sistem') !== false || strpos($colLower, 'analisis system') !== false || strpos($colLower, 'system analyst') !== false))) {
                 $b4Idx = $idx;
             }
             
-            if ($colLower === 'd1' || (strpos($colLower, 'nilai') !== false && (strpos($colLower, 'application developer') !== false || strpos($colLower, 'pemrograman') !== false || strpos($colLower, 'developer') !== false))) {
+            // D1: Data Analyst
+            if ($colLower === 'd1' || (strpos($colLower, 'nilai') !== false && (strpos($colLower, 'data analyst') !== false || strpos($colLower, 'analis data') !== false))) {
                 $d1Idx = $idx;
             }
-            if ($colLower === 'd2' || (strpos($colLower, 'nilai') !== false && (strpos($colLower, 'data analyst') !== false || strpos($colLower, 'analis data') !== false))) {
+            // D2: System Analyst
+            if ($colLower === 'd2' || (strpos($colLower, 'nilai') !== false && (strpos($colLower, 'system analyst') !== false || strpos($colLower, 'analis sistem') !== false || strpos($colLower, 'analis system') !== false))) {
                 $d2Idx = $idx;
             }
-            if ($colLower === 'd3' || (strpos($colLower, 'nilai') !== false && (strpos($colLower, 'system analyst') !== false || strpos($colLower, 'analis sistem') !== false || strpos($colLower, 'analis system') !== false))) {
+            // D3: App Dev
+            if ($colLower === 'd3' || (strpos($colLower, 'nilai') !== false && (strpos($colLower, 'application developer') !== false || strpos($colLower, 'pemrograman') !== false || strpos($colLower, 'developer') !== false || strpos($colLower, 'app dev') !== false))) {
                 $d3Idx = $idx;
             }
-            if ($colLower === 'd4' || (strpos($colLower, 'nilai') !== false && (strpos($colLower, 'it auditor') !== false || strpos($colLower, 'manajemen it') !== false || strpos($colLower, 'tata kelola') !== false))) {
+            // D4: IT Auditor & Governance
+            if ($colLower === 'd4' || (strpos($colLower, 'nilai') !== false && (strpos($colLower, 'it auditor') !== false || strpos($colLower, 'manajemen it') !== false || strpos($colLower, 'tata kelola') !== false || strpos($colLower, 'governance') !== false))) {
                 $d4Idx = $idx;
             }
         }

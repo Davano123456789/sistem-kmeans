@@ -34,7 +34,41 @@ class KMeansController extends Controller
             $nama_clusters[$i] = $request->nama_clusters[$i] ?? ('Cluster ' . ($i + 1));
         }
 
-        $features = ['a1', 'a2', 'a3', 'a4', 'b1', 'b2', 'b3', 'b4', 'd1', 'd2', 'd3', 'd4'];
+        // Deteksi kolom kuesioner yang aktif berdasarkan nama cluster pilihan
+        $activeIndices = [];
+        foreach ($nama_clusters as $topicName) {
+            $nameLower = strtolower(trim($topicName));
+            if (str_contains($nameLower, 'pemrograman') || str_contains($nameLower, 'developer') || str_contains($nameLower, 'application') || str_contains($nameLower, 'app')) {
+                $activeIndices[] = 1;
+            } elseif (str_contains($nameLower, 'system') || str_contains($nameLower, 'sistem')) {
+                $activeIndices[] = 3;
+            } elseif (str_contains($nameLower, 'data') || str_contains($nameLower, 'analyst')) {
+                $activeIndices[] = 2;
+            } elseif (str_contains($nameLower, 'manajemen') || str_contains($nameLower, 'auditor') || str_contains($nameLower, 'governance') || str_contains($nameLower, 'audit')) {
+                $activeIndices[] = 4;
+            }
+        }
+        
+        $activeIndices = array_unique($activeIndices);
+        
+        // Jika tidak ada kecocokan, default menggunakan seluruh kolom (12 dimensi)
+        if (empty($activeIndices)) {
+            $activeIndices = [1, 2, 3, 4];
+        }
+
+        $featuresMap = [
+            1 => ['a1', 'b1', 'd3'], // App Dev
+            2 => ['a2', 'b3', 'd1'], // Data Analyst
+            3 => ['a3', 'b4', 'd2'], // System Analyst
+            4 => ['a4', 'b2', 'd4'], // IT Auditor & Governance
+        ];
+
+        $features = [];
+        foreach ($activeIndices as $idx) {
+            if (isset($featuresMap[$idx])) {
+                $features = array_merge($features, $featuresMap[$idx]);
+            }
+        }
         
         // 1. Ambil data semua mahasiswa yang punya nilai
         $allMahasiswa = Mahasiswa::with('nilaiKuesioner')->whereHas('nilaiKuesioner')->get();
@@ -105,25 +139,16 @@ class KMeansController extends Controller
             // =====================================
             // 📊 HITUNG PCA UNTUK ITERASI INI
             // =====================================
-            // Format input: Array Nx12 (12 fitur kuesioner asli tiap mahasiswa)
+            // Format input: Array NxM (M fitur kuesioner aktif tiap mahasiswa)
             // Ini adalah standar akademik: PCA mereduksi ruang fitur asli ke 2D untuk visualisasi
             $pcaInput = [];
             foreach ($iterResults as $res) {
                 $mhs = $res['mahasiswa'];
-                $pcaInput[] = [
-                    $mhs->nilaiKuesioner->a1 ?? 0,
-                    $mhs->nilaiKuesioner->a2 ?? 0,
-                    $mhs->nilaiKuesioner->a3 ?? 0,
-                    $mhs->nilaiKuesioner->a4 ?? 0,
-                    $mhs->nilaiKuesioner->b1 ?? 0,
-                    $mhs->nilaiKuesioner->b2 ?? 0,
-                    $mhs->nilaiKuesioner->b3 ?? 0,
-                    $mhs->nilaiKuesioner->b4 ?? 0,
-                    $mhs->nilaiKuesioner->d1 ?? 0,
-                    $mhs->nilaiKuesioner->d2 ?? 0,
-                    $mhs->nilaiKuesioner->d3 ?? 0,
-                    $mhs->nilaiKuesioner->d4 ?? 0,
-                ];
+                $row = [];
+                foreach ($features as $feature) {
+                    $row[] = $mhs->nilaiKuesioner->$feature ?? 0;
+                }
+                $pcaInput[] = $row;
             }
 
             $pcaResult = $this->calculatePCA($pcaInput);
@@ -281,7 +306,8 @@ class KMeansController extends Controller
             'converged' => $converged,
             'selectedCentroids' => $request->centroids,
             'k_jumlah' => $k,
-            'nama_clusters' => $nama_clusters
+            'nama_clusters' => $nama_clusters,
+            'features' => $features
         ]);
     }
 
@@ -609,7 +635,41 @@ class KMeansController extends Controller
             $nama_clusters[$i] = $request->nama_clusters[$i] ?? ('Cluster ' . ($i + 1));
         }
 
-        $features = ['a1', 'a2', 'a3', 'a4', 'b1', 'b2', 'b3', 'b4', 'd1', 'd2', 'd3', 'd4'];
+        // Deteksi kolom kuesioner yang aktif berdasarkan nama cluster pilihan
+        $activeIndices = [];
+        foreach ($nama_clusters as $topicName) {
+            $nameLower = strtolower(trim($topicName));
+            if (str_contains($nameLower, 'pemrograman') || str_contains($nameLower, 'developer') || str_contains($nameLower, 'application') || str_contains($nameLower, 'app')) {
+                $activeIndices[] = 1;
+            } elseif (str_contains($nameLower, 'system') || str_contains($nameLower, 'sistem')) {
+                $activeIndices[] = 3;
+            } elseif (str_contains($nameLower, 'data') || str_contains($nameLower, 'analyst')) {
+                $activeIndices[] = 2;
+            } elseif (str_contains($nameLower, 'manajemen') || str_contains($nameLower, 'auditor') || str_contains($nameLower, 'governance') || str_contains($nameLower, 'audit')) {
+                $activeIndices[] = 4;
+            }
+        }
+        
+        $activeIndices = array_unique($activeIndices);
+        
+        // Jika tidak ada kecocokan, default menggunakan seluruh kolom (12 dimensi)
+        if (empty($activeIndices)) {
+            $activeIndices = [1, 2, 3, 4];
+        }
+
+        $featuresMap = [
+            1 => ['a1', 'b1', 'd3'], // App Dev
+            2 => ['a2', 'b3', 'd1'], // Data Analyst
+            3 => ['a3', 'b4', 'd2'], // System Analyst
+            4 => ['a4', 'b2', 'd4'], // IT Auditor & Governance
+        ];
+
+        $features = [];
+        foreach ($activeIndices as $idx) {
+            if (isset($featuresMap[$idx])) {
+                $features = array_merge($features, $featuresMap[$idx]);
+            }
+        }
         
         // 1. Ambil data semua mahasiswa yang punya nilai
         $allMahasiswa = Mahasiswa::with('nilaiKuesioner')->whereHas('nilaiKuesioner')->get();
@@ -686,24 +746,15 @@ class KMeansController extends Controller
             }
 
             // 📊 HITUNG PCA UNTUK ITERASI INI
-            // Format input: Array Nx12 (12 fitur kuesioner asli tiap mahasiswa)
+            // Format input: Array NxM (M fitur kuesioner aktif tiap mahasiswa)
             $pcaInput = [];
             foreach ($iterResults as $res) {
                 $mhs = $res['mahasiswa'];
-                $pcaInput[] = [
-                    $mhs->nilaiKuesioner->a1 ?? 0,
-                    $mhs->nilaiKuesioner->a2 ?? 0,
-                    $mhs->nilaiKuesioner->a3 ?? 0,
-                    $mhs->nilaiKuesioner->a4 ?? 0,
-                    $mhs->nilaiKuesioner->b1 ?? 0,
-                    $mhs->nilaiKuesioner->b2 ?? 0,
-                    $mhs->nilaiKuesioner->b3 ?? 0,
-                    $mhs->nilaiKuesioner->b4 ?? 0,
-                    $mhs->nilaiKuesioner->d1 ?? 0,
-                    $mhs->nilaiKuesioner->d2 ?? 0,
-                    $mhs->nilaiKuesioner->d3 ?? 0,
-                    $mhs->nilaiKuesioner->d4 ?? 0,
-                ];
+                $row = [];
+                foreach ($features as $feature) {
+                    $row[] = $mhs->nilaiKuesioner->$feature ?? 0;
+                }
+                $pcaInput[] = $row;
             }
 
             $pcaResult = $this->calculatePCA($pcaInput);

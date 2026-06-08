@@ -183,7 +183,10 @@
                                 <thead class="bg-light">
                                     <tr>
                                         <th>Centroid</th>
-                                        @foreach(['a1','a2','a3','a4','b1','b2','b3','b4','d1','d2','d3','d4'] as $f)
+                                        @php
+                                            $displayFeatures = isset($features) ? $features : ['a1','a2','a3','a4','b1','b2','b3','b4','d1','d2','d3','d4'];
+                                        @endphp
+                                        @foreach($displayFeatures as $f)
                                         <th class="text-uppercase">{{ $f }}</th>
                                         @endforeach
                                     </tr>
@@ -196,8 +199,8 @@
                                                 ? (isset($selectedCentroids[$cIdx]) && ($m = $mahasiswa->firstWhere('id_mahasiswa', $selectedCentroids[$cIdx])) ? $m->nama : $topics[$cIdx]) 
                                                 : 'C' . ($cIdx + 1) }}
                                         </td>
-                                        @foreach($cVals as $v)
-                                        <td>{{ number_format($v, 2) }}</td>
+                                        @foreach($displayFeatures as $f)
+                                        <td>{{ number_format($cVals[$f] ?? 0, 2) }}</td>
                                         @endforeach
                                     </tr>
                                     @endforeach
