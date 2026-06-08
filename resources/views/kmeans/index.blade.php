@@ -187,7 +187,7 @@
                                             $displayFeatures = isset($features) ? $features : ['a1','a2','a3','a4','b1','b2','b3','b4','d1','d2','d3','d4'];
                                         @endphp
                                         @foreach($displayFeatures as $f)
-                                        <th class="text-uppercase">{{ $f }}</th>
+                                        <th class="text-uppercase">{{ substr($f, 0, 1) . '-' . substr($f, 1) }}</th>
                                         @endforeach
                                     </tr>
                                 </thead>

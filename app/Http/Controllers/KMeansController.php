@@ -69,6 +69,7 @@ class KMeansController extends Controller
                 $features = array_merge($features, $featuresMap[$idx]);
             }
         }
+        sort($features);
         
         // 1. Ambil data semua mahasiswa yang punya nilai
         $allMahasiswa = Mahasiswa::with('nilaiKuesioner')->whereHas('nilaiKuesioner')->get();
@@ -670,6 +671,7 @@ class KMeansController extends Controller
                 $features = array_merge($features, $featuresMap[$idx]);
             }
         }
+        sort($features);
         
         // 1. Ambil data semua mahasiswa yang punya nilai
         $allMahasiswa = Mahasiswa::with('nilaiKuesioner')->whereHas('nilaiKuesioner')->get();
