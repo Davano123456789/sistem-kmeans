@@ -211,44 +211,58 @@
                         <h6 class="font-weight-bold px-2">Jarak ke Centroid & Cluster</h6>
                         <div class="table-responsive">
                             <table class="table table-hover align-items-center mb-0 text-xs">
-                                <thead>
-                                    <tr>
-                                         <th class="text-center text-uppercase text-secondary font-weight-bolder opacity-7" style="width: 5%">No</th>
-                                         <th class="text-uppercase text-secondary font-weight-bolder opacity-7">Mahasiswa</th>
-                                         @foreach($topics as $t)
-                                         <th class="text-center text-uppercase text-secondary font-weight-bolder opacity-7" title="{{ $t }}">C{{ $loop->iteration }}</th>
+                                 <thead>
+                                     <tr>
+                                          <th class="text-center text-uppercase text-secondary font-weight-bolder opacity-7" style="width: 5%">No</th>
+                                          <th class="text-uppercase text-secondary font-weight-bolder opacity-7">Mahasiswa</th>
+                                          @foreach($topics as $t)
+                                          <th class="text-center text-uppercase text-secondary font-weight-bolder opacity-7" title="{{ $t }}">C{{ $loop->iteration }}</th>
+                                          @endforeach
+                                          <th class="text-center text-uppercase text-secondary font-weight-bolder opacity-7">Jarak Min</th>
+                                          <th class="text-center text-uppercase text-secondary font-weight-bolder opacity-7">PC1</th>
+                                          <th class="text-center text-uppercase text-secondary font-weight-bolder opacity-7">PC2</th>
+                                          <th class="text-center text-uppercase text-secondary font-weight-bolder opacity-7">Cluster</th>
+                                          <th class="text-center text-uppercase text-secondary font-weight-bolder opacity-7">Aksi</th>
+                                      </tr>
+                                 </thead>
+                                 <tbody>
+                                      @foreach($h['results'] as $res)
+                                      <tr {!! ($res['moved'] ?? false) ? 'style="background-color: rgba(251, 140, 0, 0.08) !important;"' : '' !!}>
+                                          <td class="text-center font-weight-bold">{{ $loop->iteration }}</td>
+                                          <td class="px-4">
+                                              {{ $res['mahasiswa']->nama }}
+                                              @if($res['moved'] ?? false)
+                                                  <span class="badge bg-warning text-dark ms-1" style="font-size: 0.65rem; padding: 2px 5px;" title="Pindah cluster dari iterasi sebelumnya">Pindah</span>
+                                              @endif
+                                          </td>
+                                         @foreach($res['distances'] as $dist)
+                                         <td class="text-center">{{ number_format($dist, 4) }}</td>
                                          @endforeach
-                                         <th class="text-center text-uppercase text-secondary font-weight-bolder opacity-7">Jarak Min</th>
-                                         <th class="text-center text-uppercase text-secondary font-weight-bolder opacity-7">PC1</th>
-                                         <th class="text-center text-uppercase text-secondary font-weight-bolder opacity-7">PC2</th>
-                                         <th class="text-center text-uppercase text-secondary font-weight-bolder opacity-7">Cluster</th>
-                                     </tr>
-                                </thead>
-                                <tbody>
-                                     @foreach($h['results'] as $res)
-                                     <tr {!! ($res['moved'] ?? false) ? 'style="background-color: rgba(251, 140, 0, 0.08) !important;"' : '' !!}>
-                                         <td class="text-center font-weight-bold">{{ $loop->iteration }}</td>
-                                         <td class="px-4">
-                                             {{ $res['mahasiswa']->nama }}
-                                             @if($res['moved'] ?? false)
-                                                 <span class="badge bg-warning text-dark ms-1" style="font-size: 0.65rem; padding: 2px 5px;" title="Pindah cluster dari iterasi sebelumnya">Pindah</span>
-                                             @endif
+                                         <td class="text-center font-weight-bold">{{ number_format($res['min_distance'], 4) }}</td>
+                                         <td class="text-center text-secondary font-weight-bold">{{ number_format($res['PC1'], 3) }}</td>
+                                         <td class="text-center text-secondary font-weight-bold">{{ number_format($res['PC2'], 3) }}</td>
+                                         <td class="text-center">
+                                             @php $colorClasses = ['primary', 'info', 'success', 'warning', 'danger', 'secondary', 'dark', 'light', 'primary', 'info']; @endphp
+                                             <span class="badge badge-sm bg-gradient-{{ $colorClasses[($res['cluster']-1) % 10] }}">
+                                                 Cluster {{ $res['cluster'] }}
+                                             </span>
                                          </td>
-                                        @foreach($res['distances'] as $dist)
-                                        <td class="text-center">{{ number_format($dist, 4) }}</td>
-                                        @endforeach
-                                        <td class="text-center font-weight-bold">{{ number_format($res['min_distance'], 4) }}</td>
-                                        <td class="text-center text-secondary font-weight-bold">{{ number_format($res['PC1'], 3) }}</td>
-                                        <td class="text-center text-secondary font-weight-bold">{{ number_format($res['PC2'], 3) }}</td>
-                                        <td class="text-center">
-                                            @php $colorClasses = ['primary', 'info', 'success', 'warning', 'danger', 'secondary', 'dark', 'light', 'primary', 'info']; @endphp
-                                            <span class="badge badge-sm bg-gradient-{{ $colorClasses[($res['cluster']-1) % 10] }}">
-                                                Cluster {{ $res['cluster'] }}
-                                            </span>
-                                        </td>
-                                    </tr>
-                                    @endforeach
-                                </tbody>
+                                         <td class="text-center">
+                                             <button type="button" class="btn btn-sm btn-link text-info p-0 mb-0 btn-detail-hitung" 
+                                                 data-nama="{{ $res['mahasiswa']->nama }}"
+                                                 data-kuesioner="{{ json_encode($res['mahasiswa']->nilaiKuesioner) }}"
+                                                 data-distances="{{ json_encode($res['distances']) }}"
+                                                 data-cluster="{{ $res['cluster'] }}"
+                                                 data-pc1="{{ number_format($res['PC1'], 3) }}"
+                                                 data-pc2="{{ number_format($res['PC2'], 3) }}"
+                                                 data-centroids="{{ json_encode($h['centroids']) }}"
+                                                 title="Lihat Detail Perhitungan">
+                                                 <i class="material-icons text-md">calculate</i>
+                                             </button>
+                                         </td>
+                                     </tr>
+                                     @endforeach
+                                 </tbody>
                             </table>
                         </div>
                         <h6 class="font-weight-bold px-2 mt-4">Anggota Kelompok (Cluster)</h6>
@@ -344,6 +358,21 @@
                                                 <li>Kotak besar hitam berlabel <b>1 - 4</b> di tengah mewakili lokasi <b>Centroid PCA</b>.</li>
                                             </ul>
                                         </div>
+
+                                        <details class="mt-3 border-top pt-2" style="outline: none;">
+                                            <summary class="text-xs font-weight-bold text-dark cursor-pointer" style="outline: none; list-style: none; display: flex; align-items: center; gap: 4px;">
+                                                <i class="material-icons text-sm align-middle">help_outline</i> Bagaimana koordinat PC1 & PC2 dihitung?
+                                            </summary>
+                                            <div class="text-xxs text-secondary mt-2 ps-3">
+                                                <p class="mb-1">Koordinat 2D (PC1 & PC2) diperoleh menggunakan <b>Principal Component Analysis (PCA)</b> untuk mereduksi 12 dimensi kuesioner:</p>
+                                                <ol class="ps-3 mb-2" style="list-style-type: decimal;">
+                                                    <li><b>Standardisasi:</b> Nilai kuesioner disetarakan berdasarkan rata-rata & deviasi nilai sekelas agar adil.</li>
+                                                    <li><b>PC1 (Sumbu Horizontal):</b> Arah variansi data terbesar. Dipengaruhi kuat oleh nilai kuesioner <i>IT Auditor</i> (bobot positif) vs <i>Data Analyst</i> (bobot negatif).</li>
+                                                    <li><b>PC2 (Sumbu Vertikal):</b> Arah variansi terbesar kedua. Dipengaruhi kuat oleh nilai kuesioner <i>App Dev</i> & <i>System Analyst</i> (bobot positif) vs <i>Data Analyst</i> (bobot negatif).</li>
+                                                </ol>
+                                                <p class="mb-0"><b>Rumus Proyeksi:</b><br><code class="text-dark">PC = (Nilai_Scaled_1 &times; Bobot_1) + ... + (Nilai_Scaled_12 &times; Bobot_12)</code></p>
+                                            </div>
+                                        </details>
                                     </div>
                                     <div class="mt-4 pt-3 border-top">
                                         <a href="{{ route('kmeans.export', ['iterasi' => $h['iterasi']]) }}" class="btn btn-success w-100 mb-0 d-flex align-items-center justify-content-center">
@@ -361,6 +390,53 @@
     </div>
 </div>
 @endif
+
+<!-- Modal Detail Perhitungan -->
+<div class="modal fade" id="modalDetailPerhitungan" tabindex="-1" role="dialog" aria-labelledby="modalDetailPerhitunganLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-gradient-info text-white">
+                <h5 class="modal-title text-white" id="modalDetailPerhitunganLabel" style="font-family: 'Outfit', sans-serif; display: flex; align-items: center; gap: 4px;">
+                    <i class="material-icons align-middle me-1">calculate</i> Detail Perhitungan K-Means & PCA
+                </h5>
+                <button type="button" class="btn-close text-white font-weight-bold" data-bs-dismiss="modal" aria-label="Close" style="filter: invert(1); border: none; background: none; font-size: 1.5rem; line-height: 1;">&times;</button>
+            </div>
+            <div class="modal-body p-4" style="max-height: 80vh; overflow-y: auto;">
+                <h5 class="font-weight-bold text-dark mb-1" id="detail-nama-mhs">Nama Mahasiswa</h5>
+                <div class="mb-4" id="detail-summary-cluster">Terpilih Cluster X | PC1: X | PC2: X</div>
+                
+                <!-- Section 1: Nilai Kuesioner -->
+                <h6 class="font-weight-bold text-dark border-bottom pb-1"><i class="material-icons text-sm align-middle me-1">assignment</i> 1. Nilai Kuesioner Asli</h6>
+                <div class="table-responsive mb-4">
+                    <table class="table table-bordered table-sm text-center text-xs">
+                        <thead class="bg-gray-100">
+                            <tr>
+                                <th>Kategori</th>
+                                <th>Variabel 1 (App Dev)</th>
+                                <th>Variabel 2 (Data Analyst)</th>
+                                <th>Variabel 3 (System Analyst)</th>
+                                <th>Variabel 4 (IT Auditor)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="detail-table-kuesioner">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Section 2: Jarak Euclidean -->
+                <h6 class="font-weight-bold text-dark border-bottom pb-1 mt-4"><i class="material-icons text-sm align-middle me-1">square_foot</i> 2. Perhitungan Jarak Euclidean (12 Dimensi)</h6>
+                <p class="text-xs text-secondary mb-3">Rumus Jarak Euclidean ke Centroid: $\text{Jarak} = \sqrt{\sum (X_{\text{Mhs}} - Centroid)^2}$</p>
+                <div id="detail-euclidean-steps">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary mb-0" data-bs-dismiss="modal">Tutup</button>
+            </div>
+        </div>
+    </div>
+</div>
 @endsection
 
 @push('scripts')
@@ -567,6 +643,116 @@
             });
         })();
         @endforeach
+
+        // Setup detail modal listener
+        document.querySelectorAll('.btn-detail-hitung').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const nama = this.getAttribute('data-nama');
+                const kuesioner = JSON.parse(this.getAttribute('data-kuesioner'));
+                const distances = JSON.parse(this.getAttribute('data-distances'));
+                const cluster = parseInt(this.getAttribute('data-cluster'));
+                const pc1 = this.getAttribute('data-pc1');
+                const pc2 = this.getAttribute('data-pc2');
+                const centroids = JSON.parse(this.getAttribute('data-centroids'));
+                
+                // Get topic names
+                const topicsList = {!! json_encode($nama_clusters ?? $topics ?? []) !!};
+
+                document.getElementById('detail-nama-mhs').innerText = nama;
+                document.getElementById('detail-summary-cluster').innerHTML = `
+                    <span class="badge bg-gradient-info text-white">Cluster ${cluster} (${topicsList[cluster-1] || 'Cluster ' + cluster})</span>
+                    <span class="badge bg-gradient-secondary text-white ms-1">PC1: ${pc1}</span>
+                    <span class="badge bg-gradient-secondary text-white ms-1">PC2: ${pc2}</span>
+                `;
+
+                // Render Nilai Kuesioner
+                const tbodyKuesioner = document.getElementById('detail-table-kuesioner');
+                tbodyKuesioner.innerHTML = `
+                    <tr>
+                        <td class="font-weight-bold text-start">Minat (A)</td>
+                        <td>A1 = ${kuesioner.a1 ?? 0}</td>
+                        <td>A2 = ${kuesioner.a2 ?? 0}</td>
+                        <td>A3 = ${kuesioner.a3 ?? 0}</td>
+                        <td>A4 = ${kuesioner.a4 ?? 0}</td>
+                    </tr>
+                    <tr>
+                        <td class="font-weight-bold text-start">Keterampilan (B)</td>
+                        <td>B1 = ${kuesioner.b1 ?? 0}</td>
+                        <td>B3 = ${kuesioner.b3 ?? 0} <small class="text-secondary">(Data Analyst)</small></td>
+                        <td>B4 = ${kuesioner.b4 ?? 0} <small class="text-secondary">(System Analyst)</small></td>
+                        <td>B2 = ${kuesioner.b2 ?? 0} <small class="text-secondary">(IT Auditor)</small></td>
+                    </tr>
+                    <tr>
+                        <td class="font-weight-bold text-start">Nilai Akademik (D)</td>
+                        <td>D3 = ${kuesioner.d3 ?? 0} <small class="text-secondary">(App Dev)</small></td>
+                        <td>D1 = ${kuesioner.d1 ?? 0} <small class="text-secondary">(Data Analyst)</small></td>
+                        <td>D2 = ${kuesioner.d2 ?? 0} <small class="text-secondary">(System Analyst)</small></td>
+                        <td>D4 = ${kuesioner.d4 ?? 0} <small class="text-secondary">(IT Auditor)</small></td>
+                    </tr>
+                `;
+
+                // Render Euclidean distance calculation steps
+                const euclideanContainer = document.getElementById('detail-euclidean-steps');
+                euclideanContainer.innerHTML = '';
+
+                // Features map to display calculation per role
+                const rolesMap = [
+                    { name: "Application Developer", features: [{f: 'a1', label: 'a1 (Minat)'}, {f: 'b1', label: 'b1 (Skill)'}, {f: 'd3', label: 'd3 (Nilai)'}] },
+                    { name: "Data Analyst", features: [{f: 'a2', label: 'a2 (Minat)'}, {f: 'b3', label: 'b3 (Skill)'}, {f: 'd1', label: 'd1 (Nilai)'}] },
+                    { name: "System Analyst", features: [{f: 'a3', label: 'a3 (Minat)'}, {f: 'b4', label: 'b4 (Skill)'}, {f: 'd2', label: 'd2 (Nilai)'}] },
+                    { name: "IT Auditor & Governance", features: [{f: 'a4', label: 'a4 (Minat)'}, {f: 'b2', label: 'b2 (Skill)'}, {f: 'd4', label: 'd4 (Nilai)'}] }
+                ];
+
+                centroids.forEach((centroid, cIdx) => {
+                    const cNum = cIdx + 1;
+                    const isMin = cNum === cluster;
+                    const distanceValue = distances[cIdx] !== undefined ? parseFloat(distances[cIdx]).toFixed(4) : 'N/A';
+                    
+                    let html = `
+                        <div class="card shadow-none border mb-3 p-3" ${isMin ? 'style="background-color: rgba(76, 175, 80, 0.05); border-color: #4caf50 !important;"' : ''}>
+                            <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-2">
+                                <h6 class="text-xs font-weight-bold mb-0 text-dark">
+                                    Ke Centroid ${cNum} (${topicsList[cIdx] || 'Cluster ' + cNum})
+                                </h6>
+                                <span class="badge ${isMin ? 'bg-success' : 'bg-secondary'} text-white text-xxs">
+                                    Jarak: ${distanceValue} ${isMin ? '(TERKECIL - CLUSTER TERPILIH)' : ''}
+                                </span>
+                            </div>
+                            <div class="row text-xxs">
+                    `;
+
+                    let sumSq = 0;
+                    rolesMap.forEach(role => {
+                        html += `<div class="col-md-3"><strong>Topik ${role.name}:</strong><br>`;
+                        role.features.forEach(item => {
+                            const val = kuesioner[item.f] !== undefined ? kuesioner[item.f] : 0;
+                            const cVal = centroid[item.f] !== undefined ? parseFloat(centroid[item.f]) : 0;
+                            const diff = val - cVal;
+                            const diffSq = diff * diff;
+                            sumSq += diffSq;
+                            
+                            html += `&bull; ${item.label}: (${val} - ${cVal.toFixed(3)})&sup2; = ${diffSq.toFixed(4)}<br>`;
+                        });
+                        html += `</div>`;
+                    });
+
+                    html += `
+                            </div>
+                            <div class="border-top pt-2 mt-2 text-xxs font-weight-bold text-dark d-flex justify-content-between">
+                                <span>Jumlah Kuadrat Selisih (Sum of Squares): ${sumSq.toFixed(4)}</span>
+                                <span>Akar Kuadrat (Jarak Euclidean): &radic;${sumSq.toFixed(4)} = ${Math.sqrt(sumSq).toFixed(4)}</span>
+                            </div>
+                        </div>
+                    `;
+
+                    euclideanContainer.innerHTML += html;
+                });
+
+                // Show modal
+                const myModal = new bootstrap.Modal(document.getElementById('modalDetailPerhitungan'));
+                myModal.show();
+            });
+        });
     });
 </script>
 @endif

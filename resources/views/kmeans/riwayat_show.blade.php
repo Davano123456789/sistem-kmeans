@@ -97,15 +97,30 @@
                             <p class="text-xs text-secondary mb-3">
                                 Plot ini menggambarkan pembagian 4 kelompok rekomendasi topik tugas akhir berdasarkan kemiripan nilai kuisioner yang tereduksi ke dalam 2 dimensi (PC1 & PC2).
                             </p>
-                            <div class="text-xs text-secondary border-top pt-3">
-                                <p class="mb-1"><b class="text-dark">Petunjuk Legenda Plot:</b></p>
-                                <ul class="ps-3 mb-0" style="list-style-type: square;">
-                                    <li>Setiap <b>lingkaran bulat</b> mewakili satu mahasiswa.</li>
-                                    <li>Warna lingkaran menandakan <b>Cluster Rekomendasi Topik</b> saat ini.</li>
-                                    <li>Garis solid sewarna yang mengelilingi adalah batas terluar kelompok (<b>Convex Hull</b>).</li>
-                                    <li>Kotak besar hitam berlabel <b>1 - 4</b> di tengah mewakili lokasi <b>Centroid PCA</b>.</li>
-                                </ul>
-                            </div>
+                             <div class="text-xs text-secondary border-top pt-3">
+                                 <p class="mb-1"><b class="text-dark">Petunjuk Legenda Plot:</b></p>
+                                 <ul class="ps-3 mb-0" style="list-style-type: square;">
+                                     <li>Setiap <b>lingkaran bulat</b> mewakili satu mahasiswa.</li>
+                                     <li>Warna lingkaran menandakan <b>Cluster Rekomendasi Topik</b> saat ini.</li>
+                                     <li>Garis solid sewarna yang mengelilingi adalah batas terluar kelompok (<b>Convex Hull</b>).</li>
+                                     <li>Kotak besar hitam berlabel <b>1 - 4</b> di tengah mewakili lokasi <b>Centroid PCA</b>.</li>
+                                 </ul>
+                             </div>
+
+                             <details class="mt-3 border-top pt-2" style="outline: none;">
+                                 <summary class="text-xs font-weight-bold text-dark cursor-pointer" style="outline: none; list-style: none; display: flex; align-items: center; gap: 4px;">
+                                     <i class="material-icons text-sm align-middle">help_outline</i> Bagaimana koordinat PC1 & PC2 dihitung?
+                                 </summary>
+                                 <div class="text-xxs text-secondary mt-2 ps-3">
+                                     <p class="mb-1">Koordinat 2D (PC1 & PC2) diperoleh menggunakan <b>Principal Component Analysis (PCA)</b> untuk mereduksi 12 dimensi kuesioner:</p>
+                                     <ol class="ps-3 mb-2" style="list-style-type: decimal;">
+                                         <li><b>Standardisasi:</b> Nilai kuesioner disetarakan berdasarkan rata-rata & deviasi nilai sekelas agar adil.</li>
+                                         <li><b>PC1 (Sumbu Horizontal):</b> Arah variansi data terbesar. Dipengaruhi kuat oleh nilai kuesioner <i>IT Auditor</i> (bobot positif) vs <i>Data Analyst</i> (bobot negatif).</li>
+                                         <li><b>PC2 (Sumbu Vertikal):</b> Arah variansi terbesar kedua. Dipengaruhi kuat oleh nilai kuesioner <i>App Dev</i> & <i>System Analyst</i> (bobot positif) vs <i>Data Analyst</i> (bobot negatif).</li>
+                                     </ol>
+                                     <p class="mb-0"><b>Rumus Proyeksi:</b><br><code class="text-dark">PC = (Nilai_Scaled_1 &times; Bobot_1) + ... + (Nilai_Scaled_12 &times; Bobot_12)</code></p>
+                                 </div>
+                             </details>
                         </div>
                         <div class="mt-4 pt-3 border-top">
                             <a href="{{ route('kmeans.riwayat.export', $riwayat->id_riwayat) }}" class="btn btn-success w-100 mb-0 d-flex align-items-center justify-content-center">
@@ -188,6 +203,7 @@
                                 <th class="text-center text-uppercase text-secondary font-weight-bolder opacity-7">PC1</th>
                                 <th class="text-center text-uppercase text-secondary font-weight-bolder opacity-7">PC2</th>
                                 <th class="text-center text-uppercase text-secondary font-weight-bolder opacity-7">Cluster</th>
+                                <th class="text-center text-uppercase text-secondary font-weight-bolder opacity-7">Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -207,11 +223,71 @@
                                         Cluster {{ $res['cluster'] }}
                                     </span>
                                 </td>
+                                <td class="text-center">
+                                    <button type="button" class="btn btn-sm btn-link text-info p-0 mb-0 btn-detail-hitung" 
+                                        data-nama="{{ $res['mahasiswa']->nama }}"
+                                        data-kuesioner="{{ json_encode($res['mahasiswa']->nilaiKuesioner) }}"
+                                        data-distances="{{ json_encode($res['distances']) }}"
+                                        data-cluster="{{ $res['cluster'] }}"
+                                        data-pc1="{{ number_format($res['PC1'], 3) }}"
+                                        data-pc2="{{ number_format($res['PC2'], 3) }}"
+                                        data-centroids="{{ json_encode($finalCentroids) }}"
+                                        title="Lihat Detail Perhitungan">
+                                        <i class="material-icons text-md">calculate</i>
+                                    </button>
+                                </td>
                             </tr>
                             @endforeach
                         </tbody>
                     </table>
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Detail Perhitungan -->
+<div class="modal fade" id="modalDetailPerhitungan" tabindex="-1" role="dialog" aria-labelledby="modalDetailPerhitunganLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-gradient-info text-white">
+                <h5 class="modal-title text-white" id="modalDetailPerhitunganLabel" style="font-family: 'Outfit', sans-serif; display: flex; align-items: center; gap: 4px;">
+                    <i class="material-icons align-middle me-1">calculate</i> Detail Perhitungan K-Means & PCA
+                </h5>
+                <button type="button" class="btn-close text-white font-weight-bold" data-bs-dismiss="modal" aria-label="Close" style="filter: invert(1); border: none; background: none; font-size: 1.5rem; line-height: 1;">&times;</button>
+            </div>
+            <div class="modal-body p-4" style="max-height: 80vh; overflow-y: auto;">
+                <h5 class="font-weight-bold text-dark mb-1" id="detail-nama-mhs">Nama Mahasiswa</h5>
+                <div class="mb-4" id="detail-summary-cluster">Terpilih Cluster X | PC1: X | PC2: X</div>
+                
+                <!-- Section 1: Nilai Kuesioner -->
+                <h6 class="font-weight-bold text-dark border-bottom pb-1"><i class="material-icons text-sm align-middle me-1">assignment</i> 1. Nilai Kuesioner Asli</h6>
+                <div class="table-responsive mb-4">
+                    <table class="table table-bordered table-sm text-center text-xs">
+                        <thead class="bg-gray-100">
+                            <tr>
+                                <th>Kategori</th>
+                                <th>Variabel 1 (App Dev)</th>
+                                <th>Variabel 2 (Data Analyst)</th>
+                                <th>Variabel 3 (System Analyst)</th>
+                                <th>Variabel 4 (IT Auditor)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="detail-table-kuesioner">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Section 2: Jarak Euclidean -->
+                <h6 class="font-weight-bold text-dark border-bottom pb-1 mt-4"><i class="material-icons text-sm align-middle me-1">square_foot</i> 2. Perhitungan Jarak Euclidean (12 Dimensi)</h6>
+                <p class="text-xs text-secondary mb-3">Rumus Jarak Euclidean ke Centroid: $\text{Jarak} = \sqrt{\sum (X_{\text{Mhs}} - Centroid)^2}$</p>
+                <div id="detail-euclidean-steps">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary mb-0" data-bs-dismiss="modal">Tutup</button>
             </div>
         </div>
     </div>

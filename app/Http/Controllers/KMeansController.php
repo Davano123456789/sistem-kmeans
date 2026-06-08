@@ -973,13 +973,27 @@ class KMeansController extends Controller
             }
         }
 
+        $features = ['a1','b1','d3','a2','b3','d1','a3','b4','d2','a4','b2','d4'];
+        $finalCentroids = [];
+        for ($c = 0; $c < $k; $c++) {
+            $members = $clusters[$c];
+            $count = count($members);
+            foreach ($features as $f) {
+                $sum = 0;
+                foreach ($members as $m) {
+                    $sum += $m->nilaiKuesioner->$f ?? 0;
+                }
+                $finalCentroids[$c][$f] = $count > 0 ? $sum / $count : 0;
+            }
+        }
+
         $selectedCentroidsNames = [];
         foreach ($riwayat->centroid_awal as $cId) {
             $mhsCentroid = Mahasiswa::find($cId);
             $selectedCentroidsNames[] = $mhsCentroid ? $mhsCentroid->nama : 'N/A';
         }
 
-        return view('kmeans.riwayat_show', compact('riwayat', 'results', 'clusters', 'centroidsPca', 'hulls', 'nama_clusters', 'selectedCentroidsNames', 'k'));
+        return view('kmeans.riwayat_show', compact('riwayat', 'results', 'clusters', 'centroidsPca', 'hulls', 'nama_clusters', 'selectedCentroidsNames', 'k', 'finalCentroids'));
     }
 
     public function riwayatExport($id)
