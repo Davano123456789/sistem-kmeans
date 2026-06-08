@@ -22,7 +22,7 @@ class KMeansController extends Controller
     {
         $request->validate([
             'jumlah_cluster' => 'required|integer|min:2|max:10',
-            'centroids' => 'required|array|size:' . $request->jumlah_cluster,
+            'centroids' => 'required|array|size:' . ($request->integer('jumlah_cluster') ?: 0),
             'centroids.*' => 'required|exists:mahasiswa,id_mahasiswa',
             'nama_clusters' => 'nullable|array',
         ]);
@@ -596,7 +596,7 @@ class KMeansController extends Controller
     {
         $request->validate([
             'jumlah_cluster' => 'required|integer|min:2|max:10',
-            'centroids' => 'required|array|size:' . $request->jumlah_cluster,
+            'centroids' => 'required|array|size:' . ($request->integer('jumlah_cluster') ?: 0),
             'centroids.*' => 'required|exists:mahasiswa,id_mahasiswa',
             'nama_riwayat' => 'required|string|max:255',
             'nama_clusters' => 'nullable|array',
