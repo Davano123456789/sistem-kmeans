@@ -21,7 +21,7 @@ class KMeansController extends Controller
     public function hitung(Request $request)
     {
         $request->validate([
-            'jumlah_cluster' => 'required|integer|min:2|max:10',
+            'jumlah_cluster' => 'required|integer|in:2,3,4',
             'centroids' => 'required|array|size:' . ($request->integer('jumlah_cluster') ?: 0),
             'centroids.*' => 'required|exists:mahasiswa,id_mahasiswa',
             'nama_clusters' => 'nullable|array',
@@ -634,7 +634,7 @@ class KMeansController extends Controller
     public function simpan(Request $request)
     {
         $request->validate([
-            'jumlah_cluster' => 'required|integer|min:2|max:10',
+            'jumlah_cluster' => 'required|integer|in:2,3,4',
             'centroids' => 'required|array|size:' . ($request->integer('jumlah_cluster') ?: 0),
             'centroids.*' => 'required|exists:mahasiswa,id_mahasiswa',
             'nama_riwayat' => 'required|string|max:255',

@@ -32,7 +32,11 @@
 
                         <div class="mb-4">
                             <label class="form-label text-xs font-weight-bold">Jumlah Cluster (K)</label>
-                            <input type="number" name="jumlah_cluster" id="jumlah_cluster" class="form-control border px-3" value="{{ $k }}" min="2" max="10" required>
+                            <select name="jumlah_cluster" id="jumlah_cluster" class="form-select border px-3" required>
+                                <option value="2" {{ $k == 2 ? 'selected' : '' }}>2</option>
+                                <option value="3" {{ $k == 3 ? 'selected' : '' }}>3</option>
+                                <option value="4" {{ $k == 4 ? 'selected' : '' }}>4</option>
+                            </select>
                         </div>
 
                         <div id="centroid-container">
@@ -150,8 +154,12 @@
                 <div class="mt-3 mt-md-0" style="max-width: 450px; width: 100%;">
                     <form action="{{ route('kmeans.simpan') }}" method="POST" class="d-flex align-items-center gap-2">
                         @csrf
+                        <input type="hidden" name="jumlah_cluster" value="{{ $k_jumlah }}">
                         @foreach($selectedCentroids as $cId)
                             <input type="hidden" name="centroids[]" value="{{ $cId }}">
+                        @endforeach
+                        @foreach($nama_clusters ?? [] as $clusterName)
+                            <input type="hidden" name="nama_clusters[]" value="{{ $clusterName }}">
                         @endforeach
                         <div class="input-group input-group-outline is-filled my-0" style="flex-grow: 1;">
                             <label class="form-label">Nama Riwayat</label>
