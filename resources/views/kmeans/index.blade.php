@@ -46,7 +46,20 @@
                                 
                                 <div class="mb-2">
                                     <label class="form-label text-xs">Nama Cluster / Topik</label>
-                                    <input type="text" name="nama_clusters[]" class="form-control border px-2 py-1 text-sm" value="{{ $topics[$i-1] ?? 'Cluster '.$i }}" required>
+                                    <select name="nama_clusters[]" class="form-select border px-2 py-1 text-sm" required>
+                                        @php
+                                            $defaultOptions = [
+                                                'Application Developer',
+                                                'Data Analyst',
+                                                'System Analyst',
+                                                'IT Auditor & Governance'
+                                            ];
+                                            $currentTopic = $topics[$i-1] ?? $defaultOptions[$i-1] ?? 'Application Developer';
+                                        @endphp
+                                        @foreach($defaultOptions as $opt)
+                                            <option value="{{ $opt }}" {{ $currentTopic == $opt ? 'selected' : '' }}>{{ $opt }}</option>
+                                        @endforeach
+                                    </select>
                                 </div>
 
                                 <div class="mb-0">
@@ -939,16 +952,32 @@
             let currentItems = container.querySelectorAll('.centroid-item').length;
             let optionsTemplate = document.getElementById('mahasiswa-options').innerHTML;
             
+            const defaultOptions = [
+                'Application Developer',
+                'Data Analyst',
+                'System Analyst',
+                'IT Auditor & Governance'
+            ];
+            
             if (k > currentItems) {
                 // Add new items
                 for (let i = currentItems + 1; i <= k; i++) {
                     let div = document.createElement('div');
                     div.className = 'centroid-item mb-3 p-3 border border-radius-md bg-gray-50';
+                    
+                    let selectTopicOptions = '';
+                    defaultOptions.forEach((opt, idx) => {
+                        let selected = (idx === i - 1) ? 'selected' : '';
+                        selectTopicOptions += `<option value="${opt}" ${selected}>${opt}</option>`;
+                    });
+
                     div.innerHTML = `
                         <h6 class="text-xs font-weight-bold mb-2">Cluster ${i}</h6>
                         <div class="mb-2">
                             <label class="form-label text-xs">Nama Cluster / Topik</label>
-                            <input type="text" name="nama_clusters[]" class="form-control border px-2 py-1 text-sm" value="Cluster ${i}" required>
+                            <select name="nama_clusters[]" class="form-select border px-2 py-1 text-sm" required>
+                                ${selectTopicOptions}
+                            </select>
                         </div>
                         <div class="mb-0">
                             <label class="form-label text-xs">Centroid Awal</label>
