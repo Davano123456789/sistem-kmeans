@@ -694,7 +694,7 @@ class KMeansController extends Controller
 
         $dbCentroids = [];
         for ($i = 0; $i < $k; $i++) {
-            $dbCentroids[$i] = Centroid::firstOrCreate(
+            $dbCentroids[$i] = Centroid::updateOrCreate(
                 ['kode' => 'C' . ($i + 1)],
                 ['topik' => $nama_clusters[$i]]
             );
