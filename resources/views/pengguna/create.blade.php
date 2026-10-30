@@ -59,7 +59,7 @@
                                 <select name="role" id="role" class="form-control">
                                     <option value="">Pilih Role</option>
                                     <option value="koordinator" {{ old('role') == 'koordinator' ? 'selected' : '' }}>Koordinator Skripsi</option>
-                                    <option value="dosen" {{ old('role') == 'dosen' ? 'selected' : '' }}>Dosen Pembimbing</option>
+                                    <option value="kaprodi" {{ old('role') == 'kaprodi' ? 'selected' : '' }}>Kepala Program Studi</option>
                                 </select>
                             </div>
                             @error('role')

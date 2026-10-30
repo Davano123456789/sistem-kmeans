@@ -50,7 +50,7 @@
                                             <i class="material-icons text-xs">visibility</i> Lihat
                                         </a>
                                         
-                                        @if(!str_contains(strtolower(auth()->user()->role), 'dosen'))
+                                        @if(!str_contains(strtolower(auth()->user()->role), 'kaprodi'))
                                         <form action="{{ route('kmeans.riwayat.destroy', $r->id_riwayat) }}" method="POST" class="delete-form d-inline-block">
                                             @csrf
                                             @method('DELETE')

@@ -21,8 +21,8 @@ class CheckRole
 
         $userRole = strtolower($request->user()->role);
 
-        // Jika role user mengandung kata 'dosen' (misalnya 'dosen' atau 'dosen pembimbing')
-        if (str_contains($userRole, 'dosen')) {
+        // Jika role user mengandung kata 'kaprodi' (misalnya 'kaprodi' atau 'kepala program studi')
+        if (str_contains($userRole, 'kaprodi')) {
             $allowedRoutes = [
                 'kmeans.riwayat.index',
                 'kmeans.riwayat.show',
@@ -33,13 +33,13 @@ class CheckRole
             $currentRouteName = $request->route() ? $request->route()->getName() : null;
 
             if (!in_array($currentRouteName, $allowedRoutes)) {
-                // Jika dosen mencoba mengakses root `/`, redirect saja ke halaman hasil-cluster
+                // Jika kaprodi mencoba mengakses root `/`, redirect saja ke halaman hasil-cluster
                 if ($request->is('/')) {
                     return redirect()->route('kmeans.riwayat.index');
                 }
                 
                 // Jika mengakses halaman lain, tolak dan kembalikan ke halaman hasil cluster
-                return redirect()->route('kmeans.riwayat.index')->with('error', 'Akses ditolak! Akun Dosen hanya diizinkan untuk melihat Hasil Cluster (Read-Only).');
+                return redirect()->route('kmeans.riwayat.index')->with('error', 'Akses ditolak! Akun Kepala Program Studi hanya diizinkan untuk melihat Hasil Cluster (Read-Only).');
             }
         }
 

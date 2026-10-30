@@ -8,7 +8,7 @@
   <hr class="horizontal dark mt-0 mb-2">
   <div class="collapse navbar-collapse w-auto max-height-vh-100" id="sidenav-collapse-main">
     <ul class="navbar-nav">
-      @if(!str_contains(strtolower(auth()->user()->role), 'dosen'))
+      @if(!str_contains(strtolower(auth()->user()->role), 'kaprodi'))
       <li class="nav-item">
         <a class="nav-link text-dark {{ Request::is('/') ? 'active bg-gradient-dark text-white' : '' }}" href="/">
           <div class="{{ Request::is('/') ? 'text-white' : 'text-dark' }} text-center me-2 d-flex align-items-center justify-content-center">
@@ -50,7 +50,7 @@
           <span class="nav-link-text ms-1">Hasil Cluster</span>
         </a>
       </li>
-      @if(!str_contains(strtolower(auth()->user()->role), 'dosen'))
+      @if(!str_contains(strtolower(auth()->user()->role), 'kaprodi'))
       <li class="nav-item">
         <a class="nav-link text-dark {{ Request::is('pengguna*') ? 'active bg-gradient-dark text-white' : '' }}" href="{{ route('pengguna.index') }}">
           <div class="{{ Request::is('pengguna*') ? 'text-white' : 'text-dark' }} text-center me-2 d-flex align-items-center justify-content-center">
